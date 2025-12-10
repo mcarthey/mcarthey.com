@@ -7,7 +7,7 @@ namespace mcarthey.com.Controllers
     {
         public IActionResult Index()
         {
-            var model = new
+            var model = new AboutViewModel
             {
                 Timeline = GetTimelineEvents(),
                 Skills = GetSkills()
