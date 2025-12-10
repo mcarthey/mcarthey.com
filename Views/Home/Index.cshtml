@@ -1,0 +1,112 @@
+@{
+    ViewData["Title"] = "Home";
+}
+
+<!-- Main Terminal Interface -->
+<div id="terminal-interface" class="max-w-6xl mx-auto">
+    <!-- Boot Sequence -->
+    <div id="boot-sequence" class="mb-8">
+        <div class="terminal-text text-lg mb-4">
+            <div id="boot-text"></div>
+        </div>
+        <!-- Skip Button -->
+        <div id="skip-button" class="mt-6 text-center">
+            <button onclick="skipBootSequence()" class="nav-button text-xs pulse-animation">
+                ⏭ SKIP INTRO
+            </button>
+        </div>
+    </div>
+
+    <!-- Welcome Header -->
+    <div id="welcome-header" class="hidden mb-8">
+        <div class="ascii-art text-xs mb-4">
+ ____ ____ ____ ____ ____ ____ ____ ____ ____
+||G |||E |||N |||- |||X |||  |||D |||E |||V ||
+||__|||__|||__|||__|||__|||__|||__|||__|||__||
+|/__\|/__\|/__\|/__\|/__\|/__\|/__\|/__\|/__\|
+        </div>
+        <div class="terminal-text text-xl mb-4">
+            WELCOME TO GEN-X DEVELOPER TERMINAL
+        </div>
+        <div class="terminal-text text-sm mb-6">
+            System Version: @DateTime.Now.ToString("yyyy.MM.dd") | Runtime: ASP.NET Core MVC | Developer: Mark McArthey
+        </div>
+    </div>
+
+    <!-- Navigation ASCII Art -->
+    <div id="nav-section" class="hidden mb-8">
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            <a href="@Url.Action("Index", "About")" class="nav-icon text-center p-4 border border-green-500 border-opacity-30 hover:border-opacity-100 transition-all block">
+                <div class="ascii-art text-xs mb-2">
+┌─┐┌─┐┌─┐┌─┐
+│A││B││O││U│
+└─┘└─┘└─┘└─┘
+                </div>
+                <div class="terminal-text text-sm">ABOUT</div>
+            </a>
+            <a href="@Url.Action("Index", "Projects")" class="nav-icon text-center p-4 border border-green-500 border-opacity-30 hover:border-opacity-100 transition-all block">
+                <div class="ascii-art text-xs mb-2">
+┌─┐┌─┐┌─┐┌─┐
+│P││R││O││J│
+└─┘└─┘└─┘└─┘
+                </div>
+                <div class="terminal-text text-sm">PROJECTS</div>
+            </a>
+            <a href="@Url.Action("Index", "Hobbies")" class="nav-icon text-center p-4 border border-green-500 border-opacity-30 hover:border-opacity-100 transition-all block">
+                <div class="ascii-art text-xs mb-2">
+┌─┐┌─┐┌─┐┌─┐
+│H││O││B││B│
+└─┘└─┘└─┘└─┘
+                </div>
+                <div class="terminal-text text-sm">HOBBIES</div>
+            </a>
+            <div class="nav-icon text-center p-4 border border-green-500 border-opacity-30 hover:border-opacity-100 transition-all cursor-pointer" onclick="showContactInfo()">
+                <div class="ascii-art text-xs mb-2">
+┌─┐┌─┐┌─┐┌─┐
+│C││O││N││T│
+└─┘└─┘└─┘└─┘
+                </div>
+                <div class="terminal-text text-sm">CONTACT</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Command Interface -->
+    <div id="command-interface" class="hidden mb-8">
+        <div class="terminal-text mb-4">
+            <span class="text-amber-400">C:\></span>
+            <input type="text" id="command-input" class="command-prompt" placeholder="Type command or click navigation..." autocomplete="off">
+            <span class="blink">█</span>
+        </div>
+        <div id="command-output" class="terminal-text text-sm"></div>
+    </div>
+
+    <!-- System Information -->
+    <div id="system-info" class="hidden">
+        <div class="terminal-text text-xs mb-4">
+            AVAILABLE COMMANDS:
+        </div>
+        <div class="terminal-text text-xs grid grid-cols-2 gap-2">
+            <div>ABOUT - Developer biography</div>
+            <div>PROJECTS - Code portfolio</div>
+            <div>HOBBIES - Personal interests</div>
+            <div>CONTACT - Get in touch</div>
+            <div>HELP - Show this message</div>
+            <div>CLEAR - Clear screen</div>
+        </div>
+        <div class="terminal-text text-xs mt-4">
+            EASTER EGGS: Try KONAMI, PACMAN, TETRIS
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        // Initialize terminal when page loads
+        document.addEventListener('DOMContentLoaded', () => {
+            if (!window.terminal) {
+                window.terminal = new RetroTerminal();
+            }
+        });
+    </script>
+}

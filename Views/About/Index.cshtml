@@ -1,0 +1,179 @@
+@model dynamic
+@{
+    ViewData["Title"] = "About";
+}
+
+<!-- Main Content -->
+<div class="max-w-6xl mx-auto pt-16">
+    <!-- Header -->
+    <div class="text-center mb-12 fade-in">
+        <div class="ascii-art text-xs mb-4">
+┌─┐┌─┐┌─┐┌─┐┌─┐┌─┐┌─┐┌─┐┌─┐┌─┐┌─┐┌─┐┌─┐┌─┐┌─┐
+│A││B││O││U││T││ ││D││E││V││E││L││O││P││E││R│
+└─┘└─┘└─┘└─┘└─┘└─┘└─┘└─┘└─┘└─┘└─┘└─┘└─┘└─┘└─┘
+        </div>
+        <h1 class="terminal-text text-3xl mb-4">ABOUT THE DEVELOPER</h1>
+        <div class="terminal-text text-sm opacity-75">
+            Loading biography... Please wait.
+        </div>
+    </div>
+
+    <!-- Hero Image -->
+    <div class="text-center mb-12 fade-in">
+        <img src="~/images/vic20-setup.png" alt="VIC-20 Setup" class="mx-auto rounded-lg border-2 border-green-500 shadow-lg" style="max-width: 600px; width: 100%;">
+    </div>
+
+    <!-- Personal Story -->
+    <div class="mb-12 fade-in">
+        <h2 class="terminal-text text-xl mb-6 border-b border-green-500 border-opacity-50 pb-2">
+            PERSONAL STORY
+        </h2>
+        <div class="terminal-text text-sm leading-relaxed space-y-4">
+            <p>
+                Welcome to my digital realm. I'm Mark McArthey, a Gen X software developer and instructor who cut my teeth on the legendary
+                Commodore VIC-20, where 3.5KB of memory was enough to spark a lifelong passion for computing.
+            </p>
+            <p>
+                My journey began in the golden age of 8-bit computing, where loading programs from cassette tapes
+                taught me patience and debugging BASIC code on a glowing CRT monitor taught me persistence.
+                Those early experiences with the VIC-20 and Atari 2600 shaped not just my career path, but my
+                entire approach to problem-solving and technology.
+            </p>
+            <p>
+                Today, with over 40 years of computing experience and a Master's degree in Software Engineering,
+                I work as a full-time C# developer and adjunct instructor, sharing my passion for clean code and
+                efficient solutions with the next generation of developers. I work with modern frameworks like .NET 8 and C# MVC,
+                but I never forget the fundamental lessons learned from those early machines: efficiency matters,
+                every byte counts, and sometimes the most elegant solution is the simplest one.
+            </p>
+        </div>
+    </div>
+
+    <!-- Timeline -->
+    <div class="mb-12 fade-in">
+        <h2 class="terminal-text text-xl mb-6 border-b border-green-500 border-opacity-50 pb-2">
+            CAREER TIMELINE
+        </h2>
+        <div class="space-y-6">
+            @foreach (var item in Model.Timeline)
+            {
+                <div class="timeline-item">
+                    <div class="terminal-text text-sm">
+                        <strong class="text-amber-400">@item.Period</strong><br>
+                        @item.Description
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+
+    <!-- Skills -->
+    <div class="mb-12 fade-in">
+        <h2 class="terminal-text text-xl mb-6 border-b border-green-500 border-opacity-50 pb-2">
+            TECHNICAL SKILLS
+        </h2>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+                <h3 class="terminal-text text-sm mb-4 text-amber-400">PRIMARY TECHNOLOGIES</h3>
+                <div class="space-y-4">
+                    @foreach (var skill in Model.Skills.Where(s => s.Category == "Primary"))
+                    {
+                        <div>
+                            <div class="terminal-text text-xs mb-1">@skill.Name</div>
+                            <div class="skill-bar" style="width: @skill.Percentage%"></div>
+                        </div>
+                    }
+                </div>
+            </div>
+            <div>
+                <h3 class="terminal-text text-sm mb-4 text-amber-400">SECONDARY SKILLS</h3>
+                <div class="space-y-4">
+                    @foreach (var skill in Model.Skills.Where(s => s.Category == "Secondary"))
+                    {
+                        <div>
+                            <div class="terminal-text text-xs mb-1">@skill.Name</div>
+                            <div class="skill-bar" style="width: @skill.Percentage%"></div>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Philosophy -->
+    <div class="mb-12 fade-in">
+        <h2 class="terminal-text text-xl mb-6 border-b border-green-500 border-opacity-50 pb-2">
+            DEVELOPMENT PHILOSOPHY
+        </h2>
+        <div class="terminal-text text-sm leading-relaxed space-y-4">
+            <p>
+                <strong class="text-amber-400">KISS Principle:</strong> Keep It Simple, Stupid. The best code is
+                code that doesn't need comments because it's self-explanatory.
+            </p>
+            <p>
+                <strong class="text-amber-400">Efficiency First:</strong> Every byte still counts, even in today's
+                world of abundant memory. Efficient code scales better and performs better.
+            </p>
+            <p>
+                <strong class="text-amber-400">Test Everything:</strong> If it can break, it will break.
+                Comprehensive testing saves time and prevents production disasters.
+            </p>
+            <p>
+                <strong class="text-amber-400">Continuous Learning:</strong> Technology evolves constantly.
+                Staying current while respecting the fundamentals keeps skills relevant.
+            </p>
+            <p>
+                <strong class="text-amber-400">Retro Respect:</strong> Never forget where we came from.
+                The principles learned from 8-bit computing still apply today.
+            </p>
+        </div>
+    </div>
+
+    <!-- Personal Interests Preview -->
+    <div class="mb-12 fade-in">
+        <h2 class="terminal-text text-xl mb-6 border-b border-green-500 border-opacity-50 pb-2">
+            BEYOND CODE
+        </h2>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div class="border border-green-500 border-opacity-30 p-4 hover:border-opacity-100 transition-all">
+                <div class="terminal-text text-sm text-amber-400 mb-2">JEEP RESTORATION</div>
+                <div class="terminal-text text-xs">2004 Wrangler LJ Unlimited project</div>
+            </div>
+            <div class="border border-green-500 border-opacity-30 p-4 hover:border-opacity-100 transition-all">
+                <div class="terminal-text text-sm text-amber-400 mb-2">D&D GAMING</div>
+                <div class="terminal-text text-xs">Dungeon Master and player</div>
+            </div>
+            <div class="border border-green-500 border-opacity-30 p-4 hover:border-opacity-100 transition-all">
+                <div class="terminal-text text-sm text-amber-400 mb-2">HAM RADIO</div>
+                <div class="terminal-text text-xs">Amateur radio enthusiast</div>
+            </div>
+            <div class="border border-green-500 border-opacity-30 p-4 hover:border-opacity-100 transition-all">
+                <div class="terminal-text text-sm text-amber-400 mb-2">FITNESS</div>
+                <div class="terminal-text text-xs">Strength training and health</div>
+            </div>
+            <div class="border border-green-500 border-opacity-30 p-4 hover:border-opacity-100 transition-all">
+                <div class="terminal-text text-sm text-amber-400 mb-2">WOODWORKING</div>
+                <div class="terminal-text text-xs">Hand-crafted projects</div>
+            </div>
+            <div class="border border-green-500 border-opacity-30 p-4 hover:border-opacity-100 transition-all">
+                <div class="terminal-text text-sm text-amber-400 mb-2">RETRO GAMING</div>
+                <div class="terminal-text text-xs">Atari 2600 and arcade games</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Contact CTA -->
+    <div class="text-center mb-12 fade-in">
+        <div class="terminal-text text-sm mb-4">
+            Interested in connecting? Check out my projects or get in touch!
+        </div>
+        <div class="space-x-4">
+            <a href="@Url.Action("Index", "Projects")" class="nav-button inline-block">
+                VIEW PROJECTS
+            </a>
+            <a href="@Url.Action("Index", "Hobbies")" class="nav-button inline-block">
+                EXPLORE HOBBIES
+            </a>
+        </div>
+    </div>
+</div>
