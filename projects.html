@@ -1,0 +1,700 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PROJECTS - GEN-X DEVELOPER TERMINAL</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/typed.js/2.0.12/typed.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/dist/echarts.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Courier+Prime:wght@400;700&display=swap');
+        
+        * {
+            font-family: 'Courier Prime', 'Courier New', monospace;
+        }
+        
+        body {
+            background: #000000;
+            color: #00FF00;
+            overflow-x: hidden;
+            image-rendering: pixelated;
+        }
+        
+        .crt-container {
+            position: relative;
+            background: #000;
+            border-radius: 20px;
+            padding: 40px;
+            margin: 20px;
+            box-shadow: 
+                inset 0 0 50px rgba(0, 255, 0, 0.1),
+                0 0 100px rgba(0, 255, 0, 0.2),
+                inset 0 0 20px rgba(0, 0, 0, 0.8);
+        }
+        
+        .crt-container::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: 
+                linear-gradient(180deg, transparent 0%, rgba(0, 255, 0, 0.03) 50%, transparent 100%),
+                repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0, 255, 0, 0.03) 2px, rgba(0, 255, 0, 0.03) 4px);
+            pointer-events: none;
+            border-radius: 20px;
+        }
+        
+        .terminal-text {
+            text-shadow: 0 0 5px #00FF00, 0 0 10px #00FF00, 0 0 15px #00FF00;
+            letter-spacing: 1px;
+        }
+        
+        .scanline {
+            position: absolute;
+            width: 100%;
+            height: 2px;
+            background: rgba(0, 255, 0, 0.1);
+            animation: scanline 2s linear infinite;
+        }
+        
+        @keyframes scanline {
+            0% { top: 0; }
+            100% { top: 100%; }
+        }
+        
+        .power-led {
+            width: 8px;
+            height: 8px;
+            background: #FFB000;
+            border-radius: 50%;
+            box-shadow: 0 0 10px #FFB000;
+            animation: glow 2s ease-in-out infinite alternate;
+        }
+        
+        @keyframes glow {
+            from { box-shadow: 0 0 5px #FFB000; }
+            to { box-shadow: 0 0 15px #FFB000, 0 0 25px #FFB000; }
+        }
+        
+        .project-card {
+            border: 1px solid #00FF00;
+            background: rgba(0, 255, 0, 0.05);
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        
+        .project-card:hover {
+            background: rgba(0, 255, 0, 0.1);
+            box-shadow: 0 0 20px rgba(0, 255, 0, 0.3);
+            transform: translateY(-2px);
+        }
+        
+        .tech-tag {
+            background: #008000;
+            color: #000000;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 10px;
+            display: inline-block;
+            margin: 2px;
+            font-weight: bold;
+        }
+        
+        .nav-button {
+            border: 1px solid #00FF00;
+            background: transparent;
+            color: #00FF00;
+            padding: 8px 16px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-shadow: 0 0 5px #00FF00;
+        }
+        
+        .nav-button:hover {
+            background: #00FF00;
+            color: #000000;
+            box-shadow: 0 0 15px #00FF00;
+        }
+        
+        .ascii-art {
+            font-family: 'Courier New', monospace;
+            line-height: 1;
+            white-space: pre;
+            color: #00FF00;
+        }
+        
+        .fade-in {
+            animation: fadeIn 0.5s ease-in;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        .modal {
+            background: rgba(0, 0, 0, 0.9);
+            border: 2px solid #00FF00;
+            box-shadow: 0 0 30px rgba(0, 255, 0, 0.5);
+        }
+        
+        .code-block {
+            background: #001100;
+            border: 1px solid #00FF00;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            overflow-x: auto;
+        }
+        
+        .filter-button {
+            background: transparent;
+            border: 1px solid #008000;
+            color: #008000;
+            padding: 4px 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 12px;
+        }
+        
+        .filter-button.active,
+        .filter-button:hover {
+            background: #008000;
+            color: #000000;
+            border-color: #00FF00;
+        }
+    </style>
+</head>
+<body>
+    <!-- CRT Monitor Container -->
+    <div class="crt-container min-h-screen relative">
+        <!-- Scanline Effect -->
+        <div class="scanline"></div>
+        
+        <!-- Power LED -->
+        <div class="absolute top-4 right-4">
+            <div class="power-led"></div>
+        </div>
+        
+        <!-- Back to Terminal Button -->
+        <div class="absolute top-4 left-4">
+            <button onclick="window.location.href='index.html'" class="nav-button text-xs">
+                ← BACK TO TERMINAL
+            </button>
+        </div>
+        
+        <!-- Main Content -->
+        <div class="max-w-7xl mx-auto pt-16">
+            <!-- Header -->
+            <div class="text-center mb-12 fade-in">
+                <div class="ascii-art text-xs mb-4">
+┌─┐┌─┐┌─┐┌─┐┌─┐┌─┐┌─┐┌─┐┌─┐┌─┐┌─┐┌─┐┌─┐┌─┐┌─┐┌─┐┌─┐
+│P││R││O││J││E││C││T││S││ ││P││O││R││T││F││O││L││I││O│
+└─┘└─┘└─┘└─┘└─┘└─┘└─┘└─┘└─┘└─┘└─┘└─┘└─┘└─┘└─┘└─┘└─┘└─┘
+                </div>
+                <h1 class="terminal-text text-3xl mb-4">DEVELOPMENT PROJECTS</h1>
+                <div class="terminal-text text-sm opacity-75 mb-6">
+                    Compiled software portfolio | .NET C# MVC Specialist
+                </div>
+                
+                <!-- Filter Buttons -->
+                <div class="flex flex-wrap justify-center gap-2 mb-8">
+                    <button class="filter-button active" onclick="filterProjects('all')">ALL</button>
+                    <button class="filter-button" onclick="filterProjects('web')">WEB</button>
+                    <button class="filter-button" onclick="filterProjects('desktop')">DESKTOP</button>
+                    <button class="filter-button" onclick="filterProjects('api')">API</button>
+                    <button class="filter-button" onclick="filterProjects('mobile')">MOBILE</button>
+                </div>
+            </div>
+            
+            <!-- Hero Image -->
+            <div class="text-center mb-12 fade-in">
+                <img src="resources/terminal-code.png" alt="Terminal Code" class="mx-auto rounded-lg border-2 border-green-500 shadow-lg" style="max-width: 500px; width: 100%;">
+            </div>
+            
+            <!-- Projects Grid -->
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
+                <!-- Project 1: Enterprise Web Application -->
+                <div class="project-card p-6 fade-in" data-category="web" onclick="showProjectDetails('project1')">
+                    <div class="ascii-art text-xs mb-4">
+┌─┐┌─┐┌─┐┌─┐┌─┐
+│E││N││T││E││R│
+└─┘└─┘└─┘└─┘└─┘
+                    </div>
+                    <h3 class="terminal-text text-lg mb-2">Enterprise Web Portal</h3>
+                    <p class="terminal-text text-xs mb-4 opacity-75">
+                        Large-scale business application with complex workflows and reporting
+                    </p>
+                    <div class="mb-4">
+                        <span class="tech-tag">C#</span>
+                        <span class="tech-tag">ASP.NET MVC</span>
+                        <span class="tech-tag">SQL Server</span>
+                        <span class="tech-tag">jQuery</span>
+                    </div>
+                    <div class="terminal-text text-xs">
+                        Status: <span class="text-green-400">COMPLETED</span> | Year: 2023
+                    </div>
+                </div>
+                
+                <!-- Project 2: RESTful API -->
+                <div class="project-card p-6 fade-in" data-category="api" onclick="showProjectDetails('project2')">
+                    <div class="ascii-art text-xs mb-4">
+┌─┐┌─┐┌─┐┌─┐┌─┐
+│A││P││I│ │S││V│
+└─┘└─┘└─┘└─┘└─┘
+                    </div>
+                    <h3 class="terminal-text text-lg mb-2">Microservices API</h3>
+                    <p class="terminal-text text-xs mb-4 opacity-75">
+                        Scalable RESTful API architecture for mobile and web applications
+                    </p>
+                    <div class="mb-4">
+                        <span class="tech-tag">.NET Core</span>
+                        <span class="tech-tag">Entity Framework</span>
+                        <span class="tech-tag">Azure</span>
+                        <span class="tech-tag">Swagger</span>
+                    </div>
+                    <div class="terminal-text text-xs">
+                        Status: <span class="text-green-400">PRODUCTION</span> | Year: 2024
+                    </div>
+                </div>
+                
+                <!-- Project 3: Desktop Application -->
+                <div class="project-card p-6 fade-in" data-category="desktop" onclick="showProjectDetails('project3')">
+                    <div class="ascii-art text-xs mb-4">
+┌─┐┌─┐┌─┐┌─┐┌─┐
+│W││I││N││D││O│
+└─┘└─┘└─┘└─┘└─┘
+                    </div>
+                    <h3 class="terminal-text text-lg mb-2">Windows Desktop App</h3>
+                    <p class="terminal-text text-xs mb-4 opacity-75">
+                        Business productivity tool with advanced data visualization
+                    </p>
+                    <div class="mb-4">
+                        <span class="tech-tag">C#</span>
+                        <span class="tech-tag">WPF</span>
+                        <span class="tech-tag">MVVM</span>
+                        <span class="tech-tag">LINQ</span>
+                    </div>
+                    <div class="terminal-text text-xs">
+                        Status: <span class="text-yellow-400">IN DEVELOPMENT</span> | Year: 2024
+                    </div>
+                </div>
+                
+                <!-- Project 4: Mobile Backend -->
+                <div class="project-card p-6 fade-in" data-category="api" onclick="showProjectDetails('project4')">
+                    <div class="ascii-art text-xs mb-4">
+┌─┐┌─┐┌─┐┌─┐┌─┐
+│M││O││B││I││L│
+└─┘└─┘└─┘└─┘└─┘
+                    </div>
+                    <h3 class="terminal-text text-lg mb-2">Mobile App Backend</h3>
+                    <p class="terminal-text text-xs mb-4 opacity-75">
+                        Comprehensive backend services for cross-platform mobile application
+                    </p>
+                    <div class="mb-4">
+                        <span class="tech-tag">.NET 6</span>
+                        <span class="tech-tag">Azure Functions</span>
+                        <span class="tech-tag">Cosmos DB</span>
+                        <span class="tech-tag">SignalR</span>
+                    </div>
+                    <div class="terminal-text text-xs">
+                        Status: <span class="text-green-400">LIVE</span> | Year: 2023
+                    </div>
+                </div>
+                
+                <!-- Project 5: E-commerce Platform -->
+                <div class="project-card p-6 fade-in" data-category="web" onclick="showProjectDetails('project5')">
+                    <div class="ascii-art text-xs mb-4">
+┌─┐┌─┐┌─┐┌─┐┌─┐
+│S││H││O││P│ │P│
+└─┘└─┘└─┘└─┘└─┘
+                    </div>
+                    <h3 class="terminal-text text-lg mb-2">E-commerce Platform</h3>
+                    <p class="terminal-text text-xs mb-4 opacity-75">
+                        Full-featured online store with payment integration and inventory management
+                    </p>
+                    <div class="mb-4">
+                        <span class="tech-tag">ASP.NET Core</span>
+                        <span class="tech-tag">Stripe API</span>
+                        <span class="tech-tag">Redis</span>
+                        <span class="tech-tag">Docker</span>
+                    </div>
+                    <div class="terminal-text text-xs">
+                        Status: <span class="text-green-400">DEPLOYED</span> | Year: 2022
+                    </div>
+                </div>
+                
+                <!-- Project 6: Xamarin Mobile App -->
+                <div class="project-card p-6 fade-in" data-category="mobile" onclick="showProjectDetails('project6')">
+                    <div class="ascii-art text-xs mb-4">
+┌─┐┌─┐┌─┐┌─┐┌─┐
+│X││A││M││A││R│
+└─┘└─┘└─┘└─┘└─┘
+                    </div>
+                    <h3 class="terminal-text text-lg mb-2">Cross-Platform Mobile App</h3>
+                    <p class="terminal-text text-xs mb-4 opacity-75">
+                        Enterprise mobile solution built with Xamarin.Forms for iOS and Android
+                    </p>
+                    <div class="mb-4">
+                        <span class="tech-tag">Xamarin.Forms</span>
+                        <span class="tech-tag">MVVM</span>
+                        <span class="tech-tag">SQLite</span>
+                        <span class="tech-tag">Azure AD</span>
+                    </div>
+                    <div class="terminal-text text-xs">
+                        Status: <span class="text-green-400">STORE READY</span> | Year: 2023
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Technology Stack Chart -->
+            <div class="mb-12 fade-in">
+                <h2 class="terminal-text text-xl mb-6 border-b border-green-500 border-opacity-50 pb-2">
+                    TECHNOLOGY USAGE
+                </h2>
+                <div class="bg-black border border-green-500 border-opacity-30 p-6">
+                    <div id="tech-chart" style="width: 100%; height: 300px;"></div>
+                </div>
+            </div>
+            
+            <!-- GitHub Stats -->
+            <div class="mb-12 fade-in">
+                <h2 class="terminal-text text-xl mb-6 border-b border-green-500 border-opacity-50 pb-2">
+                    DEVELOPMENT STATISTICS
+                </h2>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div class="text-center border border-green-500 border-opacity-30 p-6">
+                        <div class="terminal-text text-2xl text-amber-400 mb-2">250+</div>
+                        <div class="terminal-text text-sm">PROJECTS COMPLETED</div>
+                    </div>
+                    <div class="text-center border border-green-500 border-opacity-30 p-6">
+                        <div class="terminal-text text-2xl text-amber-400 mb-2">50K+</div>
+                        <div class="terminal-text text-sm">LINES OF CODE</div>
+                    </div>
+                    <div class="text-center border border-green-500 border-opacity-30 p-6">
+                        <div class="terminal-text text-2xl text-amber-400 mb-2">15+</div>
+                        <div class="terminal-text text-sm">YEARS EXPERIENCE</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Footer -->
+        <div class="absolute bottom-4 left-4 right-4">
+            <div class="terminal-text text-xs text-center opacity-50">
+                © 2025 GEN-X DEVELOPER | Built with nostalgia and C# MVC
+            </div>
+        </div>
+    </div>
+    
+    <!-- Project Detail Modal -->
+    <div id="project-modal" class="fixed inset-0 bg-black bg-opacity-90 hidden z-50 flex items-center justify-center">
+        <div class="modal p-8 max-w-4xl w-full mx-4 max-h-screen overflow-y-auto">
+            <div class="flex justify-between items-center mb-6">
+                <h2 id="modal-title" class="terminal-text text-2xl"></h2>
+                <button onclick="closeModal()" class="nav-button">CLOSE</button>
+            </div>
+            <div id="modal-content" class="terminal-text text-sm"></div>
+        </div>
+    </div>
+    
+    <script>
+        // Project data
+        const projectDetails = {
+            project1: {
+                title: "Enterprise Web Portal",
+                content: `
+                    <h3 class="text-amber-400 mb-4">PROJECT OVERVIEW</h3>
+                    <p class="mb-4">A comprehensive enterprise web portal built for a Fortune 500 company, featuring complex business workflows, real-time reporting, and role-based access control.</p>
+                    
+                    <h3 class="text-amber-400 mb-4">TECHNICAL SPECIFICATIONS</h3>
+                    <ul class="list-disc list-inside mb-4 space-y-1">
+                        <li>ASP.NET MVC 5 with C# backend</li>
+                        <li>SQL Server 2019 with stored procedures</li>
+                        <li>jQuery and Bootstrap for frontend</li>
+                        <li>Entity Framework for data access</li>
+                        <li>Windows Authentication integration</li>
+                    </ul>
+                    
+                    <h3 class="text-amber-400 mb-4">KEY FEATURES</h3>
+                    <ul class="list-disc list-inside mb-4 space-y-1">
+                        <li>Multi-tenant architecture supporting 10,000+ users</li>
+                        <li>Advanced reporting with SSRS integration</li>
+                        <li>Workflow engine for business process automation</li>
+                        <li>Real-time notifications using SignalR</li>
+                        <li>Comprehensive audit logging and compliance features</li>
+                    </ul>
+                    
+                    <h3 class="text-amber-400 mb-4">CHALLENGES SOLVED</h3>
+                    <p class="mb-4">Successfully migrated a legacy VB6 application to modern web technologies while maintaining data integrity and user workflows. Implemented caching strategies to handle high user loads and optimized database queries for improved performance.</p>
+                `
+            },
+            project2: {
+                title: "Microservices API",
+                content: `
+                    <h3 class="text-amber-400 mb-4">PROJECT OVERVIEW</h3>
+                    <p class="mb-4">Scalable microservices architecture designed to support a mobile-first application with millions of users, featuring high availability and fault tolerance.</p>
+                    
+                    <h3 class="text-amber-400 mb-4">TECHNICAL SPECIFICATIONS</h3>
+                    <ul class="list-disc list-inside mb-4 space-y-1">
+                        <li>.NET Core 6.0 with minimal APIs</li>
+                        <li>Azure Service Bus for message queuing</li>
+                        <li>Cosmos DB for distributed data storage</li>
+                        <li>Redis for caching and session management</li>
+                        <li>Swagger/OpenAPI for API documentation</li>
+                    </ul>
+                    
+                    <h3 class="text-amber-400 mb-4">ARCHITECTURE HIGHLIGHTS</h3>
+                    <ul class="list-disc list-inside mb-4 space-y-1">
+                        <li>12-factor app principles implementation</li>
+                        <li>Event-driven architecture with domain events</li>
+                        <li>Circuit breaker pattern for resilience</li>
+                        <li>Distributed tracing and monitoring</li>
+                        <li>Blue-green deployment strategy</li>
+                    </ul>
+                    
+                    <h3 class="text-amber-400 mb-4">PERFORMANCE METRICS</h3>
+                    <p class="mb-4">Achieved 99.9% uptime with sub-100ms response times. Successfully handled traffic spikes during product launches and implemented auto-scaling based on demand patterns.</p>
+                `
+            },
+            project3: {
+                title: "Windows Desktop Application",
+                content: `
+                    <h3 class="text-amber-400 mb-4">PROJECT OVERVIEW</h3>
+                    <p class="mb-4">Modern desktop application for business analytics and data visualization, replacing legacy Excel-based reporting with real-time interactive dashboards.</p>
+                    
+                    <h3 class="text-amber-400 mb-4">TECHNICAL SPECIFICATIONS</h3>
+                    <ul class="list-disc list-inside mb-4 space-y-1">
+                        <li>WPF with MVVM pattern</li>
+                        <li>Entity Framework Core for data access</li>
+                        <li>LiveCharts for data visualization</li>
+                        <li>Prism framework for modularity</li>
+                        <li>ClickOnce deployment</li>
+                    </ul>
+                    
+                    <h3 class="text-amber-400 mb-4">USER INTERFACE</h3>
+                    <ul class="list-disc list-inside mb-4 space-y-1">
+                        <li>Responsive design with multiple monitor support</li>
+                        <li>Custom theming and user preferences</li>
+                        <li>Advanced data grid with filtering and sorting</li>
+                        <li>Export functionality to PDF and Excel</li>
+                        <li>Keyboard shortcuts for power users</li>
+                    </ul>
+                    
+                    <h3 class="text-amber-400 mb-4">CURRENT STATUS</h3>
+                    <p class="mb-4">Currently in beta testing with select users. Gathering feedback for UI/UX improvements and performance optimization. Planning general availability release in Q2 2025.</p>
+                `
+            },
+            project4: {
+                title: "Mobile App Backend",
+                content: `
+                    <h3 class="text-amber-400 mb-4">PROJECT OVERVIEW</h3>
+                    <p class="mb-4">Comprehensive backend infrastructure for a cross-platform mobile application serving 50,000+ active users with real-time features and offline synchronization.</p>
+                    
+                    <h3 class="text-amber-400 mb-4">TECHNICAL SPECIFICATIONS</h3>
+                    <ul class="list-disc list-inside mb-4 space-y-1">
+                        <li>.NET 6 with ASP.NET Core</li>
+                        <li>Azure Functions for serverless computing</li>
+                        <li>SignalR for real-time communication</li>
+                        <li>Azure AD B2C for authentication</li>
+                        <li>Application Insights for monitoring</li>
+                    </ul>
+                    
+                    <h3 class="text-amber-400 mb-4">CORE FEATURES</h3>
+                    <ul class="list-disc list-inside mb-4 space-y-1">
+                        <li>Push notification service</li>
+                        <li>Offline data synchronization</li>
+                        <li>User management and authentication</li>
+                        <li>File upload and storage</li>
+                        <li>Analytics and usage tracking</li>
+                    </ul>
+                    
+                    <h3 class="text-amber-400 mb-4">SCALABILITY</h3>
+                    <p class="mb-4">Designed for horizontal scaling with Azure App Service and implemented caching strategies to handle growing user base. Currently processing 1M+ requests per day with 99.5% uptime.</p>
+                `
+            },
+            project5: {
+                title: "E-commerce Platform",
+                content: `
+                    <h3 class="text-amber-400 mb-4">PROJECT OVERVIEW</h3>
+                    <p class="mb-4">Full-featured e-commerce platform with inventory management, payment processing, order fulfillment, and customer relationship management.</p>
+                    
+                    <h3 class="text-amber-400 mb-4">TECHNICAL SPECIFICATIONS</h3>
+                    <ul class="list-disc list-inside mb-4 space-y-1">
+                        <li>ASP.NET Core 5.0 with Razor Pages</li>
+                        <li>Stripe API for payment processing</li>
+                        <li>Redis for session and output caching</li>
+                        <li>Docker containerization</li>
+                        <li>SendGrid for email services</li>
+                    </ul>
+                    
+                    <h3 class="text-amber-400 mb-4">BUSINESS FEATURES</h3>
+                    <ul class="list-disc list-inside mb-4 space-y-1">
+                        <li>Multi-currency and tax calculation</li>
+                        <li>Real-time inventory tracking</li>
+                        <li>Automated order processing</li>
+                        <li>Customer reviews and ratings</li>
+                        <li>Advanced search and filtering</li>
+                    </ul>
+                    
+                    <h3 class="text-amber-400 mb-4">PERFORMANCE</h3>
+                    <p class="mb-4">Successfully handles Black Friday traffic spikes with auto-scaling. Average page load time under 2 seconds and 99.9% uptime since launch.</p>
+                `
+            },
+            project6: {
+                title: "Cross-Platform Mobile App",
+                content: `
+                    <h3 class="text-amber-400 mb-4">PROJECT OVERVIEW</h3>
+                    <p class="mb-4">Enterprise mobile solution built with Xamarin.Forms, providing field workers with offline capabilities and real-time data synchronization.</p>
+                    
+                    <h3 class="text-amber-400 mb-4">TECHNICAL SPECIFICATIONS</h3>
+                    <ul class="list-disc list-inside mb-4 space-y-1">
+                        <li>Xamarin.Forms 5.0 with MVVM pattern</li>
+                        <li>SQLite for local data storage</li>
+                        <li>Azure AD for enterprise authentication</li>
+                        <li>Custom renderers for platform-specific UI</li>
+                        <li>App Center for distribution and analytics</li>
+                    </ul>
+                    
+                    <h3 class="text-amber-400 mb-4">MOBILE FEATURES</h3>
+                    <ul class="list-disc list-inside mb-4 space-y-1">
+                        <li>Offline-first architecture with sync</li>
+                        <li>Barcode scanning integration</li>
+                        <li>GPS location tracking</li>
+                        <li>Camera integration for documentation</li>
+                        <li>Push notifications for alerts</li>
+                    </ul>
+                    
+                    <h3 class="text-amber-400 mb-4">DEPLOYMENT STATUS</h3>
+                    <p class="mb-4">Successfully deployed to both Apple App Store and Google Play Store. Currently used by 1,000+ field workers across multiple organizations.</p>
+                `
+            }
+        };
+        
+        // Initialize ECharts
+        document.addEventListener('DOMContentLoaded', () => {
+            const chartDom = document.getElementById('tech-chart');
+            const myChart = echarts.init(chartDom);
+            
+            const option = {
+                backgroundColor: 'transparent',
+                textStyle: {
+                    color: '#00FF00'
+                },
+                tooltip: {
+                    trigger: 'item',
+                    backgroundColor: '#001100',
+                    borderColor: '#00FF00',
+                    textStyle: {
+                        color: '#00FF00'
+                    }
+                },
+                series: [
+                    {
+                        name: 'Technology Usage',
+                        type: 'pie',
+                        radius: '50%',
+                        data: [
+                            { value: 35, name: 'C# / .NET' },
+                            { value: 25, name: 'ASP.NET MVC' },
+                            { value: 20, name: 'SQL Server' },
+                            { value: 10, name: 'JavaScript' },
+                            { value: 5, name: 'Azure' },
+                            { value: 5, name: 'Other' }
+                        ],
+                        itemStyle: {
+                            color: function(params) {
+                                const colors = ['#00FF00', '#008000', '#FFB000', '#004400', '#00AA00', '#006600'];
+                                return colors[params.dataIndex];
+                            }
+                        },
+                        label: {
+                            color: '#00FF00'
+                        },
+                        labelLine: {
+                            lineStyle: {
+                                color: '#00FF00'
+                            }
+                        }
+                    }
+                ]
+            };
+            
+            myChart.setOption(option);
+            
+            // Animate skill bars
+            setTimeout(() => {
+                const skillBars = document.querySelectorAll('.project-card');
+                skillBars.forEach((card, index) => {
+                    setTimeout(() => {
+                        card.style.opacity = '0';
+                        card.style.transform = 'translateY(20px)';
+                        card.style.transition = 'all 0.5s ease';
+                        setTimeout(() => {
+                            card.style.opacity = '1';
+                            card.style.transform = 'translateY(0)';
+                        }, 100);
+                    }, index * 200);
+                });
+            }, 1000);
+        });
+        
+        // Filter projects
+        function filterProjects(category) {
+            const cards = document.querySelectorAll('.project-card');
+            const buttons = document.querySelectorAll('.filter-button');
+            
+            // Update button states
+            buttons.forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+            
+            // Filter cards
+            cards.forEach(card => {
+                if (category === 'all' || card.dataset.category === category) {
+                    card.style.display = 'block';
+                    card.classList.add('fade-in');
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+        }
+        
+        // Show project details modal
+        function showProjectDetails(projectId) {
+            const modal = document.getElementById('project-modal');
+            const title = document.getElementById('modal-title');
+            const content = document.getElementById('modal-content');
+            
+            const project = projectDetails[projectId];
+            if (project) {
+                title.textContent = project.title;
+                content.innerHTML = project.content;
+                modal.classList.remove('hidden');
+            }
+        }
+        
+        // Close modal
+        function closeModal() {
+            document.getElementById('project-modal').classList.add('hidden');
+        }
+        
+        // Close modal on escape key
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                closeModal();
+            }
+        });
+        
+        // Close modal on backdrop click
+        document.getElementById('project-modal').addEventListener('click', (e) => {
+            if (e.target.id === 'project-modal') {
+                closeModal();
+            }
+        });
+    </script>
+</body>
+</html>

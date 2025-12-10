@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GEN-X DEVELOPER TERMINAL</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/typed.js/2.0.12/typed.min.js"></script>
+    <script src="https://unpkg.com/splitting@1.0.6/dist/splitting.js"></script>
+    <link href="https://unpkg.com/splitting@1.0.6/dist/splitting.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Courier+Prime:wght@400;700&display=swap');
+        
+        * {
+            font-family: 'Courier Prime', 'Courier New', monospace;
+        }
+        
+        body {
+            background: #000000;
+            color: #00FF00;
+            overflow-x: hidden;
+            image-rendering: pixelated;
+        }
+        
+        .crt-container {
+            position: relative;
+            background: #000;
+            border-radius: 20px;
+            padding: 40px;
+            margin: 20px;
+            box-shadow: 
+                inset 0 0 50px rgba(0, 255, 0, 0.1),
+                0 0 100px rgba(0, 255, 0, 0.2),
+                inset 0 0 20px rgba(0, 0, 0, 0.8);
+        }
+        
+        .crt-container::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: 
+                linear-gradient(180deg, transparent 0%, rgba(0, 255, 0, 0.03) 50%, transparent 100%),
+                repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0, 255, 0, 0.03) 2px, rgba(0, 255, 0, 0.03) 4px);
+            pointer-events: none;
+            border-radius: 20px;
+        }
+        
+        .terminal-text {
+            text-shadow: 0 0 5px #00FF00, 0 0 10px #00FF00, 0 0 15px #00FF00;
+            letter-spacing: 1px;
+        }
+        
+        .blink {
+            animation: blink 1s infinite;
+        }
+        
+        @keyframes blink {
+            0%, 50% { opacity: 1; }
+            51%, 100% { opacity: 0; }
+        }
+        
+        .scanline {
+            position: absolute;
+            width: 100%;
+            height: 2px;
+            background: rgba(0, 255, 0, 0.1);
+            animation: scanline 2s linear infinite;
+        }
+        
+        @keyframes scanline {
+            0% { top: 0; }
+            100% { top: 100%; }
+        }
+        
+        .ascii-art {
+            font-family: 'Courier New', monospace;
+            line-height: 1;
+            white-space: pre;
+            color: #00FF00;
+        }
+        
+        .command-prompt {
+            background: transparent;
+            border: none;
+            color: #00FF00;
+            font-family: inherit;
+            font-size: inherit;
+            outline: none;
+            width: 100%;
+        }
+        
+        .power-led {
+            width: 8px;
+            height: 8px;
+            background: #FFB000;
+            border-radius: 50%;
+            box-shadow: 0 0 10px #FFB000;
+            animation: glow 2s ease-in-out infinite alternate;
+        }
+        
+        @keyframes glow {
+            from { box-shadow: 0 0 5px #FFB000; }
+            to { box-shadow: 0 0 15px #FFB000, 0 0 25px #FFB000; }
+        }
+        
+        .nav-icon {
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        
+        .nav-icon:hover {
+            color: #FFB000;
+            text-shadow: 0 0 10px #FFB000;
+        }
+        
+        .error-text {
+            color: #FF4444;
+            text-shadow: 0 0 5px #FF4444;
+        }
+        
+        .success-text {
+            color: #44FF44;
+            text-shadow: 0 0 5px #44FF44;
+        }
+        
+        .loading-bar {
+            background: #008000;
+            height: 4px;
+            animation: loading 2s ease-in-out infinite;
+        }
+        
+        @keyframes loading {
+            0% { width: 0%; }
+            100% { width: 100%; }
+        }
+        
+        .hidden {
+            display: none;
+        }
+        
+        .fade-in {
+            animation: fadeIn 0.5s ease-in;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        .typewriter {
+            overflow: hidden;
+            border-right: 2px solid #00FF00;
+            white-space: nowrap;
+            animation: typing 3.5s steps(40, end), blink-caret 0.75s step-end infinite;
+        }
+        
+        @keyframes typing {
+            from { width: 0; }
+            to { width: 100%; }
+        }
+        
+        @keyframes blink-caret {
+            from, to { border-color: transparent; }
+            50% { border-color: #00FF00; }
+        }
+    </style>
+</head>
+<body>
+    <!-- CRT Monitor Container -->
+    <div class="crt-container min-h-screen relative">
+        <!-- Scanline Effect -->
+        <div class="scanline"></div>
+        
+        <!-- Power LED -->
+        <div class="absolute top-4 right-4">
+            <div class="power-led"></div>
+        </div>
+        
+        <!-- Main Terminal Interface -->
+        <div id="terminal-interface" class="max-w-6xl mx-auto">
+            <!-- Boot Sequence -->
+            <div id="boot-sequence" class="mb-8">
+                <div class="terminal-text text-lg mb-4">
+                    <div id="boot-text"></div>
+                </div>
+            </div>
+            
+            <!-- Welcome Header -->
+            <div id="welcome-header" class="hidden mb-8">
+                <div class="ascii-art text-xs mb-4">
+ ____ ____ ____ ____ ____ ____ ____ ____ ____ 
+||G |||E |||N |||- |||X |||  |||D |||E |||V ||
+||__|||__|||__|||__|||__|||__|||__|||__|||__||
+|/__\|/__\|/__\|/__\|/__\|/__\|/__\|/__\|/__\|
+                </div>
+                <div class="terminal-text text-xl mb-4">
+                    WELCOME TO GEN-X DEVELOPER TERMINAL
+                </div>
+                <div class="terminal-text text-sm mb-6">
+                    System Version: 2025.12.10 | Runtime: .NET C# MVC
+                </div>
+            </div>
+            
+            <!-- Navigation ASCII Art -->
+            <div id="nav-section" class="hidden mb-8">
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                    <div class="nav-icon text-center p-4 border border-green-500 border-opacity-30 hover:border-opacity-100 transition-all" onclick="executeCommand('ABOUT')">
+                        <div class="ascii-art text-xs mb-2">
+┌─┐┌─┐┌─┐┌─┐
+│A││B││O││U│
+└─┘└─┘└─┘└─┘
+                        </div>
+                        <div class="terminal-text text-sm">ABOUT</div>
+                    </div>
+                    <div class="nav-icon text-center p-4 border border-green-500 border-opacity-30 hover:border-opacity-100 transition-all" onclick="executeCommand('PROJECTS')">
+                        <div class="ascii-art text-xs mb-2">
+┌─┐┌─┐┌─┐┌─┐
+│P││R││O││J│
+└─┘└─┘└─┘└─┘
+                        </div>
+                        <div class="terminal-text text-sm">PROJECTS</div>
+                    </div>
+                    <div class="nav-icon text-center p-4 border border-green-500 border-opacity-30 hover:border-opacity-100 transition-all" onclick="executeCommand('HOBBIES')">
+                        <div class="ascii-art text-xs mb-2">
+┌─┐┌─┐┌─┐┌─┐
+│H││O││B││B│
+└─┘└─┘└─┘└─┘
+                        </div>
+                        <div class="terminal-text text-sm">HOBBIES</div>
+                    </div>
+                    <div class="nav-icon text-center p-4 border border-green-500 border-opacity-30 hover:border-opacity-100 transition-all" onclick="executeCommand('CONTACT')">
+                        <div class="ascii-art text-xs mb-2">
+┌─┐┌─┐┌─┐┌─┐
+│C││O││N││T│
+└─┘└─┘└─┘└─┘
+                        </div>
+                        <div class="terminal-text text-sm">CONTACT</div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Command Interface -->
+            <div id="command-interface" class="hidden mb-8">
+                <div class="terminal-text mb-4">
+                    <span class="text-amber-400">C:\></span>
+                    <input type="text" id="command-input" class="command-prompt" placeholder="Type command or click navigation..." autocomplete="off">
+                    <span class="blink">█</span>
+                </div>
+                <div id="command-output" class="terminal-text text-sm"></div>
+            </div>
+            
+            <!-- System Information -->
+            <div id="system-info" class="hidden">
+                <div class="terminal-text text-xs mb-4">
+                    AVAILABLE COMMANDS:
+                </div>
+                <div class="terminal-text text-xs grid grid-cols-2 gap-2">
+                    <div>ABOUT - Developer biography</div>
+                    <div>PROJECTS - Code portfolio</div>
+                    <div>HOBBIES - Personal interests</div>
+                    <div>CONTACT - Get in touch</div>
+                    <div>HELP - Show this message</div>
+                    <div>CLEAR - Clear screen</div>
+                </div>
+                <div class="terminal-text text-xs mt-4">
+                    EASTER EGGS: Try KONAMI, PACMAN, TETRIS
+                </div>
+            </div>
+            
+            <!-- Loading Section -->
+            <div id="loading-section" class="hidden text-center py-8">
+                <div class="terminal-text mb-4">LOADING...</div>
+                <div class="loading-bar w-full mb-4"></div>
+                <div class="terminal-text text-xs">Please wait while system initializes</div>
+            </div>
+        </div>
+        
+        <!-- Footer -->
+        <div class="absolute bottom-4 left-4 right-4">
+            <div class="terminal-text text-xs text-center opacity-50">
+                © 2025 GEN-X DEVELOPER | Built with nostalgia and C# MVC
+            </div>
+        </div>
+    </div>
+    
+    <script src="main.js"></script>
+</body>
+</html>

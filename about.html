@@ -1,0 +1,444 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ABOUT - GEN-X DEVELOPER TERMINAL</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/typed.js/2.0.12/typed.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Courier+Prime:wght@400;700&display=swap');
+        
+        * {
+            font-family: 'Courier Prime', 'Courier New', monospace;
+        }
+        
+        body {
+            background: #000000;
+            color: #00FF00;
+            overflow-x: hidden;
+            image-rendering: pixelated;
+        }
+        
+        .crt-container {
+            position: relative;
+            background: #000;
+            border-radius: 20px;
+            padding: 40px;
+            margin: 20px;
+            box-shadow: 
+                inset 0 0 50px rgba(0, 255, 0, 0.1),
+                0 0 100px rgba(0, 255, 0, 0.2),
+                inset 0 0 20px rgba(0, 0, 0, 0.8);
+        }
+        
+        .crt-container::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: 
+                linear-gradient(180deg, transparent 0%, rgba(0, 255, 0, 0.03) 50%, transparent 100%),
+                repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0, 255, 0, 0.03) 2px, rgba(0, 255, 0, 0.03) 4px);
+            pointer-events: none;
+            border-radius: 20px;
+        }
+        
+        .terminal-text {
+            text-shadow: 0 0 5px #00FF00, 0 0 10px #00FF00, 0 0 15px #00FF00;
+            letter-spacing: 1px;
+        }
+        
+        .scanline {
+            position: absolute;
+            width: 100%;
+            height: 2px;
+            background: rgba(0, 255, 0, 0.1);
+            animation: scanline 2s linear infinite;
+        }
+        
+        @keyframes scanline {
+            0% { top: 0; }
+            100% { top: 100%; }
+        }
+        
+        .power-led {
+            width: 8px;
+            height: 8px;
+            background: #FFB000;
+            border-radius: 50%;
+            box-shadow: 0 0 10px #FFB000;
+            animation: glow 2s ease-in-out infinite alternate;
+        }
+        
+        @keyframes glow {
+            from { box-shadow: 0 0 5px #FFB000; }
+            to { box-shadow: 0 0 15px #FFB000, 0 0 25px #FFB000; }
+        }
+        
+        .timeline-item {
+            border-left: 2px solid #00FF00;
+            padding-left: 20px;
+            margin-bottom: 30px;
+            position: relative;
+        }
+        
+        .timeline-item::before {
+            content: '';
+            position: absolute;
+            left: -6px;
+            top: 0;
+            width: 10px;
+            height: 10px;
+            background: #00FF00;
+            border-radius: 50%;
+            box-shadow: 0 0 10px #00FF00;
+        }
+        
+        .skill-bar {
+            background: #008000;
+            height: 8px;
+            border-radius: 4px;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .skill-bar::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+            animation: shimmer 2s infinite;
+        }
+        
+        @keyframes shimmer {
+            0% { left: -100%; }
+            100% { left: 100%; }
+        }
+        
+        .nav-button {
+            border: 1px solid #00FF00;
+            background: transparent;
+            color: #00FF00;
+            padding: 8px 16px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-shadow: 0 0 5px #00FF00;
+        }
+        
+        .nav-button:hover {
+            background: #00FF00;
+            color: #000000;
+            box-shadow: 0 0 15px #00FF00;
+        }
+        
+        .ascii-art {
+            font-family: 'Courier New', monospace;
+            line-height: 1;
+            white-space: pre;
+            color: #00FF00;
+        }
+        
+        .fade-in {
+            animation: fadeIn 0.5s ease-in;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        .typewriter {
+            overflow: hidden;
+            border-right: 2px solid #00FF00;
+            white-space: nowrap;
+            animation: typing 3.5s steps(40, end), blink-caret 0.75s step-end infinite;
+        }
+        
+        @keyframes typing {
+            from { width: 0; }
+            to { width: 100%; }
+        }
+        
+        @keyframes blink-caret {
+            from, to { border-color: transparent; }
+            50% { border-color: #00FF00; }
+        }
+    </style>
+</head>
+<body>
+    <!-- CRT Monitor Container -->
+    <div class="crt-container min-h-screen relative">
+        <!-- Scanline Effect -->
+        <div class="scanline"></div>
+        
+        <!-- Power LED -->
+        <div class="absolute top-4 right-4">
+            <div class="power-led"></div>
+        </div>
+        
+        <!-- Back to Terminal Button -->
+        <div class="absolute top-4 left-4">
+            <button onclick="window.location.href='index.html'" class="nav-button text-xs">
+                ← BACK TO TERMINAL
+            </button>
+        </div>
+        
+        <!-- Main Content -->
+        <div class="max-w-6xl mx-auto pt-16">
+            <!-- Header -->
+            <div class="text-center mb-12 fade-in">
+                <div class="ascii-art text-xs mb-4">
+┌─┐┌─┐┌─┐┌─┐┌─┐┌─┐┌─┐┌─┐┌─┐┌─┐┌─┐┌─┐┌─┐┌─┐┌─┐
+│A││B││O││U││T││ ││D││E││V││E││L││O││P││E││R│
+└─┘└─┘└─┘└─┘└─┘└─┘└─┘└─┘└─┘└─┘└─┘└─┘└─┘└─┘└─┘
+                </div>
+                <h1 class="terminal-text text-3xl mb-4">ABOUT THE DEVELOPER</h1>
+                <div class="terminal-text text-sm opacity-75">
+                    Loading biography... Please wait.
+                </div>
+            </div>
+            
+            <!-- Hero Image -->
+            <div class="text-center mb-12 fade-in">
+                <img src="resources/vic20-setup.png" alt="VIC-20 Setup" class="mx-auto rounded-lg border-2 border-green-500 shadow-lg" style="max-width: 600px; width: 100%;">
+            </div>
+            
+            <!-- Personal Story -->
+            <div class="mb-12 fade-in">
+                <h2 class="terminal-text text-xl mb-6 border-b border-green-500 border-opacity-50 pb-2">
+                    PERSONAL STORY
+                </h2>
+                <div class="terminal-text text-sm leading-relaxed space-y-4">
+                    <p>
+                        Welcome to my digital realm. I'm a Gen X software developer who cut their teeth on the legendary 
+                        Commodore VIC-20, where 3.5KB of memory was enough to spark a lifelong passion for computing.
+                    </p>
+                    <p>
+                        My journey began in the golden age of 8-bit computing, where loading programs from cassette tapes 
+                        taught me patience and debugging BASIC code on a glowing CRT monitor taught me persistence. 
+                        Those early experiences with the VIC-20 and Atari 2600 shaped not just my career path, but my 
+                        entire approach to problem-solving and technology.
+                    </p>
+                    <p>
+                        Today, I work with modern frameworks like .NET C# MVC, but I never forget the fundamental lessons 
+                        learned from those early machines: efficiency matters, every byte counts, and sometimes the most 
+                        elegant solution is the simplest one.
+                    </p>
+                </div>
+            </div>
+            
+            <!-- Timeline -->
+            <div class="mb-12 fade-in">
+                <h2 class="terminal-text text-xl mb-6 border-b border-green-500 border-opacity-50 pb-2">
+                    CAREER TIMELINE
+                </h2>
+                <div class="space-y-6">
+                    <div class="timeline-item">
+                        <div class="terminal-text text-sm">
+                            <strong class="text-amber-400">1980s - The Beginning</strong><br>
+                            First encounter with Commodore VIC-20. Learned BASIC programming from magazines and books. 
+                            Created simple games and utilities, discovered the magic of making computers do what I wanted.
+                        </div>
+                    </div>
+                    <div class="timeline-item">
+                        <div class="terminal-text text-sm">
+                            <strong class="text-amber-400">1990s - The Growth</strong><br>
+                            Moved to PC programming with Turbo Pascal and C++. Developed shareware applications and games. 
+                            Started professional development career with Windows applications and early web technologies.
+                        </div>
+                    </div>
+                    <div class="timeline-item">
+                        <div class="terminal-text text-sm">
+                            <strong class="text-amber-400">2000s - The Professional</strong><br>
+                            Enterprise development with .NET Framework. Built large-scale business applications, 
+                            web services, and database-driven systems. Embraced object-oriented programming and design patterns.
+                        </div>
+                    </div>
+                    <div class="timeline-item">
+                        <div class="terminal-text text-sm">
+                            <strong class="text-amber-400">2010s - The Evolution</strong><br>
+                            Transitioned to .NET Core and modern web frameworks. Developed cloud-native applications, 
+                            RESTful APIs, and microservices. Mentored junior developers and led technical teams.
+                        </div>
+                    </div>
+                    <div class="timeline-item">
+                        <div class="terminal-text text-sm">
+                            <strong class="text-amber-400">2020s - The Present</strong><br>
+                            Full-stack development with .NET 6+ and C# MVC. Focus on clean architecture, 
+                            test-driven development, and DevOps practices. Still passionate about efficient, elegant code.
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Skills -->
+            <div class="mb-12 fade-in">
+                <h2 class="terminal-text text-xl mb-6 border-b border-green-500 border-opacity-50 pb-2">
+                    TECHNICAL SKILLS
+                </h2>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <h3 class="terminal-text text-sm mb-4 text-amber-400">PRIMARY TECHNOLOGIES</h3>
+                        <div class="space-y-4">
+                            <div>
+                                <div class="terminal-text text-xs mb-1">C# / .NET</div>
+                                <div class="skill-bar" style="width: 95%"></div>
+                            </div>
+                            <div>
+                                <div class="terminal-text text-xs mb-1">ASP.NET MVC</div>
+                                <div class="skill-bar" style="width: 90%"></div>
+                            </div>
+                            <div>
+                                <div class="terminal-text text-xs mb-1">SQL Server</div>
+                                <div class="skill-bar" style="width: 85%"></div>
+                            </div>
+                            <div>
+                                <div class="terminal-text text-xs mb-1">JavaScript</div>
+                                <div class="skill-bar" style="width: 80%"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div>
+                        <h3 class="terminal-text text-sm mb-4 text-amber-400">SECONDARY SKILLS</h3>
+                        <div class="space-y-4">
+                            <div>
+                                <div class="terminal-text text-xs mb-1">HTML/CSS</div>
+                                <div class="skill-bar" style="width: 75%"></div>
+                            </div>
+                            <div>
+                                <div class="terminal-text text-xs mb-1">Azure/AWS</div>
+                                <div class="skill-bar" style="width: 70%"></div>
+                            </div>
+                            <div>
+                                <div class="terminal-text text-xs mb-1">Git/DevOps</div>
+                                <div class="skill-bar" style="width: 85%"></div>
+                            </div>
+                            <div>
+                                <div class="terminal-text text-xs mb-1">RESTful APIs</div>
+                                <div class="skill-bar" style="width: 90%"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Philosophy -->
+            <div class="mb-12 fade-in">
+                <h2 class="terminal-text text-xl mb-6 border-b border-green-500 border-opacity-50 pb-2">
+                    DEVELOPMENT PHILOSOPHY
+                </h2>
+                <div class="terminal-text text-sm leading-relaxed space-y-4">
+                    <p>
+                        <strong class="text-amber-400">KISS Principle:</strong> Keep It Simple, Stupid. The best code is 
+                        code that doesn't need comments because it's self-explanatory.
+                    </p>
+                    <p>
+                        <strong class="text-amber-400">Efficiency First:</strong> Every byte still counts, even in today's 
+                        world of abundant memory. Efficient code scales better and performs better.
+                    </p>
+                    <p>
+                        <strong class="text-amber-400">Test Everything:</strong> If it can break, it will break. 
+                        Comprehensive testing saves time and prevents production disasters.
+                    </p>
+                    <p>
+                        <strong class="text-amber-400">Continuous Learning:</strong> Technology evolves constantly. 
+                        Staying current while respecting the fundamentals keeps skills relevant.
+                    </p>
+                    <p>
+                        <strong class="text-amber-400">Retro Respect:</strong> Never forget where we came from. 
+                        The principles learned from 8-bit computing still apply today.
+                    </p>
+                </div>
+            </div>
+            
+            <!-- Personal Interests Preview -->
+            <div class="mb-12 fade-in">
+                <h2 class="terminal-text text-xl mb-6 border-b border-green-500 border-opacity-50 pb-2">
+                    BEYOND CODE
+                </h2>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    <div class="border border-green-500 border-opacity-30 p-4 hover:border-opacity-100 transition-all">
+                        <div class="terminal-text text-sm text-amber-400 mb-2">JEEP RESTORATION</div>
+                        <div class="terminal-text text-xs">2004 Wrangler LJ Unlimited project</div>
+                    </div>
+                    <div class="border border-green-500 border-opacity-30 p-4 hover:border-opacity-100 transition-all">
+                        <div class="terminal-text text-sm text-amber-400 mb-2">D&D GAMING</div>
+                        <div class="terminal-text text-xs">Dungeon Master and player</div>
+                    </div>
+                    <div class="border border-green-500 border-opacity-30 p-4 hover:border-opacity-100 transition-all">
+                        <div class="terminal-text text-sm text-amber-400 mb-2">HAM RADIO</div>
+                        <div class="terminal-text text-xs">Amateur radio enthusiast</div>
+                    </div>
+                    <div class="border border-green-500 border-opacity-30 p-4 hover:border-opacity-100 transition-all">
+                        <div class="terminal-text text-sm text-amber-400 mb-2">FITNESS</div>
+                        <div class="terminal-text text-xs">Strength training and health</div>
+                    </div>
+                    <div class="border border-green-500 border-opacity-30 p-4 hover:border-opacity-100 transition-all">
+                        <div class="terminal-text text-sm text-amber-400 mb-2">WOODWORKING</div>
+                        <div class="terminal-text text-xs">Hand-crafted projects</div>
+                    </div>
+                    <div class="border border-green-500 border-opacity-30 p-4 hover:border-opacity-100 transition-all">
+                        <div class="terminal-text text-sm text-amber-400 mb-2">RETRO GAMING</div>
+                        <div class="terminal-text text-xs">Atari 2600 and arcade games</div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Contact CTA -->
+            <div class="text-center mb-12 fade-in">
+                <div class="terminal-text text-sm mb-4">
+                    Interested in connecting? Check out my projects or get in touch!
+                </div>
+                <div class="space-x-4">
+                    <button onclick="window.location.href='projects.html'" class="nav-button">
+                        VIEW PROJECTS
+                    </button>
+                    <button onclick="window.location.href='hobbies.html'" class="nav-button">
+                        EXPLORE HOBBIES
+                    </button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Footer -->
+        <div class="absolute bottom-4 left-4 right-4">
+            <div class="terminal-text text-xs text-center opacity-50">
+                © 2025 GEN-X DEVELOPER | Built with nostalgia and C# MVC
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // Add typing effect to header
+        document.addEventListener('DOMContentLoaded', () => {
+            const header = document.querySelector('h1');
+            if (header) {
+                header.style.opacity = '0';
+                setTimeout(() => {
+                    header.style.opacity = '1';
+                    header.classList.add('typewriter');
+                }, 500);
+            }
+            
+            // Animate skill bars
+            setTimeout(() => {
+                const skillBars = document.querySelectorAll('.skill-bar');
+                skillBars.forEach((bar, index) => {
+                    setTimeout(() => {
+                        bar.style.width = bar.style.width;
+                        bar.style.transition = 'width 1s ease-out';
+                    }, index * 200);
+                });
+            }, 2000);
+        });
+    </script>
+</body>
+</html>

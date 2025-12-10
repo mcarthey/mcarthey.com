@@ -1,0 +1,848 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HOBBIES - GEN-X DEVELOPER TERMINAL</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/typed.js/2.0.12/typed.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/dist/echarts.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@splidejs/splide@4.1.4/dist/js/splide.min.js"></script>
+    <link href="https://cdn.jsdelivr.net/npm/@splidejs/splide@4.1.4/dist/css/splide.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Courier+Prime:wght@400;700&display=swap');
+        
+        * {
+            font-family: 'Courier Prime', 'Courier New', monospace;
+        }
+        
+        body {
+            background: #000000;
+            color: #00FF00;
+            overflow-x: hidden;
+            image-rendering: pixelated;
+        }
+        
+        .crt-container {
+            position: relative;
+            background: #000;
+            border-radius: 20px;
+            padding: 40px;
+            margin: 20px;
+            box-shadow: 
+                inset 0 0 50px rgba(0, 255, 0, 0.1),
+                0 0 100px rgba(0, 255, 0, 0.2),
+                inset 0 0 20px rgba(0, 0, 0, 0.8);
+        }
+        
+        .crt-container::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: 
+                linear-gradient(180deg, transparent 0%, rgba(0, 255, 0, 0.03) 50%, transparent 100%),
+                repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0, 255, 0, 0.03) 2px, rgba(0, 255, 0, 0.03) 4px);
+            pointer-events: none;
+            border-radius: 20px;
+        }
+        
+        .terminal-text {
+            text-shadow: 0 0 5px #00FF00, 0 0 10px #00FF00, 0 0 15px #00FF00;
+            letter-spacing: 1px;
+        }
+        
+        .scanline {
+            position: absolute;
+            width: 100%;
+            height: 2px;
+            background: rgba(0, 255, 0, 0.1);
+            animation: scanline 2s linear infinite;
+        }
+        
+        @keyframes scanline {
+            0% { top: 0; }
+            100% { top: 100%; }
+        }
+        
+        .power-led {
+            width: 8px;
+            height: 8px;
+            background: #FFB000;
+            border-radius: 50%;
+            box-shadow: 0 0 10px #FFB000;
+            animation: glow 2s ease-in-out infinite alternate;
+        }
+        
+        @keyframes glow {
+            from { box-shadow: 0 0 5px #FFB000; }
+            to { box-shadow: 0 0 15px #FFB000, 0 0 25px #FFB000; }
+        }
+        
+        .hobby-card {
+            border: 1px solid #00FF00;
+            background: rgba(0, 255, 0, 0.05);
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        
+        .hobby-card:hover {
+            background: rgba(0, 255, 0, 0.1);
+            box-shadow: 0 0 20px rgba(0, 255, 0, 0.3);
+            transform: translateY(-2px);
+        }
+        
+        .nav-button {
+            border: 1px solid #00FF00;
+            background: transparent;
+            color: #00FF00;
+            padding: 8px 16px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-shadow: 0 0 5px #00FF00;
+        }
+        
+        .nav-button:hover {
+            background: #00FF00;
+            color: #000000;
+            box-shadow: 0 0 15px #00FF00;
+        }
+        
+        .ascii-art {
+            font-family: 'Courier New', monospace;
+            line-height: 1;
+            white-space: pre;
+            color: #00FF00;
+        }
+        
+        .fade-in {
+            animation: fadeIn 0.5s ease-in;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        .progress-bar {
+            background: #008000;
+            height: 8px;
+            border-radius: 4px;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .progress-bar::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+            animation: shimmer 2s infinite;
+        }
+        
+        @keyframes shimmer {
+            0% { left: -100%; }
+            100% { left: 100%; }
+        }
+        
+        .dnd-stat {
+            border: 1px solid #FFB000;
+            background: rgba(255, 176, 0, 0.1);
+            padding: 8px;
+            text-align: center;
+        }
+        
+        .ham-radio-display {
+            background: #001100;
+            border: 2px solid #00FF00;
+            font-family: 'Courier New', monospace;
+            padding: 10px;
+        }
+        
+        .fitness-stat {
+            border: 1px solid #00FF00;
+            background: rgba(0, 255, 0, 0.1);
+            padding: 15px;
+            text-align: center;
+        }
+        
+        .splide__slide img {
+            border: 2px solid #00FF00;
+            border-radius: 8px;
+        }
+        
+        .splide__arrow {
+            background: #008000;
+            border: 1px solid #00FF00;
+        }
+        
+        .splide__arrow svg {
+            fill: #00FF00;
+        }
+        
+        .splide__pagination__page.is-active {
+            background: #00FF00;
+        }
+    </style>
+</head>
+<body>
+    <!-- CRT Monitor Container -->
+    <div class="crt-container min-h-screen relative">
+        <!-- Scanline Effect -->
+        <div class="scanline"></div>
+        
+        <!-- Power LED -->
+        <div class="absolute top-4 right-4">
+            <div class="power-led"></div>
+        </div>
+        
+        <!-- Back to Terminal Button -->
+        <div class="absolute top-4 left-4">
+            <button onclick="window.location.href='index.html'" class="nav-button text-xs">
+                ← BACK TO TERMINAL
+            </button>
+        </div>
+        
+        <!-- Main Content -->
+        <div class="max-w-7xl mx-auto pt-16">
+            <!-- Header -->
+            <div class="text-center mb-12 fade-in">
+                <div class="ascii-art text-xs mb-4">
+┌─┐┌─┐┌─┐┌─┐┌─┐┌─┐┌─┐┌─┐┌─┐┌─┐┌─┐┌─┐
+│H││O││B││B││I││E││S││ ││M││E││N││U│
+└─┘└─┘└─┘└─┘└─┘└─┘└─┘└─┘└─┘└─┘└─┘└─┘
+                </div>
+                <h1 class="terminal-text text-3xl mb-4">PERSONAL INTERESTS</h1>
+                <div class="terminal-text text-sm opacity-75 mb-6">
+                    Beyond the keyboard: Life, adventures, and passions
+                </div>
+            </div>
+            
+            <!-- Hero Image -->
+            <div class="text-center mb-12 fade-in">
+                <img src="resources/hobbies-collection.png" alt="Hobbies Collection" class="mx-auto rounded-lg border-2 border-green-500 shadow-lg" style="max-width: 600px; width: 100%;">
+            </div>
+            
+            <!-- Hobbies Grid -->
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
+                <!-- Jeep Restoration -->
+                <div class="hobby-card p-6 fade-in" onclick="showHobbyDetails('jeep')">
+                    <div class="ascii-art text-xs mb-4">
+┌─┐┌─┐┌─┐┌─┐┌─┐
+│J││E││E││P│ │L│
+└─┘└─┘└─┘└─┘└─┘
+                    </div>
+                    <h3 class="terminal-text text-lg mb-2">2004 Jeep Wrangler LJ</h3>
+                    <p class="terminal-text text-xs mb-4 opacity-75">
+                        Frame-off restoration project of the legendary Unlimited model
+                    </p>
+                    <div class="mb-4">
+                        <div class="terminal-text text-xs mb-1">Restoration Progress</div>
+                        <div class="progress-bar" style="width: 75%"></div>
+                        <div class="terminal-text text-xs mt-1">75% Complete</div>
+                    </div>
+                    <div class="terminal-text text-xs">
+                        Status: <span class="text-yellow-400">ACTIVE PROJECT</span>
+                    </div>
+                </div>
+                
+                <!-- D&D Gaming -->
+                <div class="hobby-card p-6 fade-in" onclick="showHobbyDetails('dnd')">
+                    <div class="ascii-art text-xs mb-4">
+┌─┐┌─┐┌─┐┌─┐┌─┐
+│D││&││D│ │G││M│
+└─┘└─┘└─┘└─┘└─┘
+                    </div>
+                    <h3 class="terminal-text text-lg mb-2">Dungeon Master</h3>
+                    <p class="terminal-text text-xs mb-4 opacity-75">
+                        Running campaigns and crafting epic adventures since 1990
+                    </p>
+                    <div class="grid grid-cols-3 gap-2 mb-4">
+                        <div class="dnd-stat">
+                            <div class="text-amber-400 text-sm">STR</div>
+                            <div class="text-xs">14</div>
+                        </div>
+                        <div class="dnd-stat">
+                            <div class="text-amber-400 text-sm">DEX</div>
+                            <div class="text-xs">12</div>
+                        </div>
+                        <div class="dnd-stat">
+                            <div class="text-amber-400 text-sm">CON</div>
+                            <div class="text-xs">16</div>
+                        </div>
+                        <div class="dnd-stat">
+                            <div class="text-amber-400 text-sm">INT</div>
+                            <div class="text-xs">18</div>
+                        </div>
+                        <div class="dnd-stat">
+                            <div class="text-amber-400 text-sm">WIS</div>
+                            <div class="text-xs">15</div>
+                        </div>
+                        <div class="dnd-stat">
+                            <div class="text-amber-400 text-sm">CHA</div>
+                            <div class="text-xs">13</div>
+                        </div>
+                    </div>
+                    <div class="terminal-text text-xs">
+                        Experience: <span class="text-green-400">35+ YEARS</span>
+                    </div>
+                </div>
+                
+                <!-- Ham Radio -->
+                <div class="hobby-card p-6 fade-in" onclick="showHobbyDetails('ham')">
+                    <div class="ascii-art text-xs mb-4">
+┌─┐┌─┐┌─┐┌─┐┌─┐
+│H││A││M│ │R││A│
+└─┘└─┘└─┘└─┘└─┘
+                    </div>
+                    <h3 class="terminal-text text-lg mb-2">Amateur Radio</h3>
+                    <p class="terminal-text text-xs mb-4 opacity-75">
+                        Communication and emergency preparedness through radio waves
+                    </p>
+                    <div class="ham-radio-display mb-4">
+                        <div class="text-xs">
+                            FREQ: 14.250 MHz<br>
+                            MODE: USB<br>
+                            PWR: 100W<br>
+                            SWR: 1.2:1
+                        </div>
+                    </div>
+                    <div class="terminal-text text-xs">
+                        Callsign: <span class="text-amber-400">PENDING</span>
+                    </div>
+                </div>
+                
+                <!-- Fitness -->
+                <div class="hobby-card p-6 fade-in" onclick="showHobbyDetails('fitness')">
+                    <div class="ascii-art text-xs mb-4">
+┌─┐┌─┐┌─┐┌─┐┌─┐
+│F││I││T││N││E│
+└─┘└─┘└─┘└─┘└─┘
+                    </div>
+                    <h3 class="terminal-text text-lg mb-2">Strength Training</h3>
+                    <p class="terminal-text text-xs mb-4 opacity-75">
+                        Powerlifting and general fitness for health and longevity
+                    </p>
+                    <div class="space-y-2 mb-4">
+                        <div class="fitness-stat">
+                            <div class="text-amber-400 text-sm">SQUAT</div>
+                            <div class="text-xs">315 lbs</div>
+                        </div>
+                        <div class="fitness-stat">
+                            <div class="text-amber-400 text-sm">BENCH</div>
+                            <div class="text-xs">225 lbs</div>
+                        </div>
+                        <div class="fitness-stat">
+                            <div class="text-amber-400 text-sm">DEADLIFT</div>
+                            <div class="text-xs">405 lbs</div>
+                        </div>
+                    </div>
+                    <div class="terminal-text text-xs">
+                        Training: <span class="text-green-400">5x/WEEK</span>
+                    </div>
+                </div>
+                
+                <!-- Woodworking -->
+                <div class="hobby-card p-6 fade-in" onclick="showHobbyDetails('wood')">
+                    <div class="ascii-art text-xs mb-4">
+┌─┐┌─┐┌─┐┌─┐┌─┐
+│W││O││O││D│ │W│
+└─┘└─┘└─┘└─┘└─┘
+                    </div>
+                    <h3 class="terminal-text text-lg mb-2">Hand Tool Woodworking</h3>
+                    <p class="terminal-text text-xs mb-4 opacity-75">
+                        Traditional craftsmanship with hand tools and reclaimed lumber
+                    </p>
+                    <div class="mb-4">
+                        <div class="terminal-text text-xs mb-2">RECENT PROJECTS</div>
+                        <div class="text-xs space-y-1">
+                            <div>✓ Hand-cut dovetail joints</div>
+                            <div>✓ Reclaimed oak coffee table</div>
+                            <div>✓ Sharpening station build</div>
+                        </div>
+                    </div>
+                    <div class="terminal-text text-xs">
+                        Specialty: <span class="text-yellow-400">HAND JOINERY</span>
+                    </div>
+                </div>
+                
+                <!-- Retro Gaming -->
+                <div class="hobby-card p-6 fade-in" onclick="showHobbyDetails('gaming')">
+                    <div class="ascii-art text-xs mb-4">
+┌─┐┌─┐┌─┐┌─┐┌─┐
+│A││T││A││R││I│
+└─┘└─┘└─┘└─┘└─┘
+                    </div>
+                    <h3 class="terminal-text text-lg mb-2">Retro Gaming</h3>
+                    <p class="terminal-text text-xs mb-4 opacity-75">
+                        Atari 2600, arcade games, and classic console collection
+                    </p>
+                    <div class="mb-4">
+                        <div class="terminal-text text-xs mb-2">FAVORITE GAMES</div>
+                        <div class="text-xs space-y-1">
+                            <div>🎮 Adventure (Atari 2600)</div>
+                            <div>🎮 Pac-Man (Arcade)</div>
+                            <div>🎮 Tetris (Game Boy)</div>
+                        </div>
+                    </div>
+                    <div class="terminal-text text-xs">
+                        Collection: <span class="text-green-400">50+ GAMES</span>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Jeep Restoration Progress -->
+            <div class="mb-12 fade-in">
+                <h2 class="terminal-text text-xl mb-6 border-b border-green-500 border-opacity-50 pb-2">
+                    JEEP RESTORATION TIMELINE
+                </h2>
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                    <!-- Image Gallery -->
+                    <div>
+                        <div class="splide" id="jeep-gallery">
+                            <div class="splide__track">
+                                <ul class="splide__list">
+                                    <li class="splide__slide">
+                                        <img src="resources/jeep-restoration.png" alt="Jeep Restoration" class="w-full">
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Progress Details -->
+                    <div>
+                        <div class="space-y-4">
+                            <div class="border border-green-500 border-opacity-30 p-4">
+                                <div class="terminal-text text-sm text-amber-400 mb-2">FRAME RESTORATION</div>
+                                <div class="progress-bar mb-2" style="width: 100%"></div>
+                                <div class="terminal-text text-xs">Complete - Sandblasted and powder coated</div>
+                            </div>
+                            <div class="border border-green-500 border-opacity-30 p-4">
+                                <div class="terminal-text text-sm text-amber-400 mb-2">ENGINE REBUILD</div>
+                                <div class="progress-bar mb-2" style="width: 90%"></div>
+                                <div class="terminal-text text-xs">4.0L I6 - New seals, gaskets, and timing chain</div>
+                            </div>
+                            <div class="border border-green-500 border-opacity-30 p-4">
+                                <div class="terminal-text text-sm text-amber-400 mb-2">SUSPENSION</div>
+                                <div class="progress-bar mb-2" style="width: 85%"></div>
+                                <div class="terminal-text text-xs">OME lift kit with new bushings and shocks</div>
+                            </div>
+                            <div class="border border-green-500 border-opacity-30 p-4">
+                                <div class="terminal-text text-sm text-amber-400 mb-2">BODY WORK</div>
+                                <div class="progress-bar mb-2" style="width: 60%"></div>
+                                <div class="terminal-text text-xs">Rust repair and prep for paint</div>
+                            </div>
+                            <div class="border border-green-500 border-opacity-30 p-4">
+                                <div class="terminal-text text-sm text-amber-400 mb-2">INTERIOR</div>
+                                <div class="progress-bar mb-2" style="width: 40%"></div>
+                                <div class="terminal-text text-xs">Seats, carpet, and dashboard restoration</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- D&D Character Sheet -->
+            <div class="mb-12 fade-in">
+                <h2 class="terminal-text text-xl mb-6 border-b border-green-500 border-opacity-50 pb-2">
+                    CURRENT D&D CAMPAIGN
+                </h2>
+                <div class="bg-black border border-green-500 border-opacity-30 p-6">
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                        <div>
+                            <h3 class="terminal-text text-lg text-amber-400 mb-4">CAMPAIGN DETAILS</h3>
+                            <div class="terminal-text text-sm space-y-2">
+                                <div><strong>Setting:</strong> Homebrew world of Aetheria</div>
+                                <div><strong>Party Size:</strong> 5 adventurers</div>
+                                <div><strong>Level Range:</strong> 1-20 (Currently Level 12)</div>
+                                <div><strong>Play Frequency:</strong> Bi-weekly sessions</div>
+                                <div><strong>Campaign Length:</strong> 3+ years ongoing</div>
+                            </div>
+                        </div>
+                        <div>
+                            <h3 class="terminal-text text-lg text-amber-400 mb-4">CURRENT PARTY</h3>
+                            <div class="terminal-text text-sm space-y-2">
+                                <div><strong>DM:</strong> The Storyteller (me)</div>
+                                <div><strong>Tank:</strong> Gareth - Human Paladin</div>
+                                <div><strong>DPS:</strong> Lyra - Elf Ranger</div>
+                                <div><strong>Healer:</strong> Brother Marcus - Dwarf Cleric</div>
+                                <div><strong>Utility:</strong> Zara - Tiefling Wizard</div>
+                                <div><strong>Rogue:</strong> Shadow - Halfling Rogue</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Fitness Progress Chart -->
+            <div class="mb-12 fade-in">
+                <h2 class="terminal-text text-xl mb-6 border-b border-green-500 border-opacity-50 pb-2">
+                    FITNESS JOURNEY
+                </h2>
+                <div class="bg-black border border-green-500 border-opacity-30 p-6">
+                    <div id="fitness-chart" style="width: 100%; height: 300px;"></div>
+                </div>
+            </div>
+            
+            <!-- Camping & Outdoor Activities -->
+            <div class="mb-12 fade-in">
+                <h2 class="terminal-text text-xl mb-6 border-b border-green-500 border-opacity-50 pb-2">
+                    OUTDOOR ADVENTURES
+                </h2>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                    <div class="border border-green-500 border-opacity-30 p-4 text-center">
+                        <div class="terminal-text text-amber-400 text-sm mb-2">CAMPING</div>
+                        <div class="terminal-text text-xs">Backpacking & Car Camping</div>
+                    </div>
+                    <div class="border border-green-500 border-opacity-30 p-4 text-center">
+                        <div class="terminal-text text-amber-400 text-sm mb-2">HIKING</div>
+                        <div class="terminal-text text-xs">Trail Exploration</div>
+                    </div>
+                    <div class="border border-green-500 border-opacity-30 p-4 text-center">
+                        <div class="terminal-text text-amber-400 text-sm mb-2">FISHING</div>
+                        <div class="terminal-text text-xs">Fly & Spin Casting</div>
+                    </div>
+                    <div class="border border-green-500 border-opacity-30 p-4 text-center">
+                        <div class="terminal-text text-amber-400 text-sm mb-2">OVERLANDING</div>
+                        <div class="terminal-text text-xs">Jeep Adventures</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Footer -->
+        <div class="absolute bottom-4 left-4 right-4">
+            <div class="terminal-text text-xs text-center opacity-50">
+                © 2025 GEN-X DEVELOPER | Built with nostalgia and C# MVC
+            </div>
+        </div>
+    </div>
+    
+    <!-- Hobby Detail Modal -->
+    <div id="hobby-modal" class="fixed inset-0 bg-black bg-opacity-90 hidden z-50 flex items-center justify-center">
+        <div class="modal p-8 max-w-4xl w-full mx-4 max-h-screen overflow-y-auto border-2 border-green-500">
+            <div class="flex justify-between items-center mb-6">
+                <h2 id="hobby-modal-title" class="terminal-text text-2xl"></h2>
+                <button onclick="closeHobbyModal()" class="nav-button">CLOSE</button>
+            </div>
+            <div id="hobby-modal-content" class="terminal-text text-sm"></div>
+        </div>
+    </div>
+    
+    <script>
+        // Initialize Splide carousel
+        document.addEventListener('DOMContentLoaded', () => {
+            new Splide('#jeep-gallery', {
+                type: 'loop',
+                autoplay: true,
+                interval: 3000,
+                arrows: true,
+                pagination: true,
+            }).mount();
+            
+            // Initialize fitness chart
+            const chartDom = document.getElementById('fitness-chart');
+            const myChart = echarts.init(chartDom);
+            
+            const option = {
+                backgroundColor: 'transparent',
+                textStyle: {
+                    color: '#00FF00'
+                },
+                tooltip: {
+                    trigger: 'axis',
+                    backgroundColor: '#001100',
+                    borderColor: '#00FF00',
+                    textStyle: {
+                        color: '#00FF00'
+                    }
+                },
+                legend: {
+                    data: ['Squat', 'Bench', 'Deadlift'],
+                    textStyle: {
+                        color: '#00FF00'
+                    }
+                },
+                xAxis: {
+                    type: 'category',
+                    data: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
+                    axisLine: {
+                        lineStyle: {
+                            color: '#00FF00'
+                        }
+                    },
+                    axisLabel: {
+                        color: '#00FF00'
+                    }
+                },
+                yAxis: {
+                    type: 'value',
+                    axisLine: {
+                        lineStyle: {
+                            color: '#00FF00'
+                        }
+                    },
+                    axisLabel: {
+                        color: '#00FF00'
+                    },
+                    splitLine: {
+                        lineStyle: {
+                            color: '#008000'
+                        }
+                    }
+                },
+                series: [
+                    {
+                        name: 'Squat',
+                        type: 'line',
+                        data: [225, 235, 245, 255, 265, 275, 285, 295, 305, 310, 315, 315],
+                        itemStyle: {
+                            color: '#00FF00'
+                        },
+                        lineStyle: {
+                            color: '#00FF00'
+                        }
+                    },
+                    {
+                        name: 'Bench',
+                        type: 'line',
+                        data: [135, 145, 155, 165, 175, 185, 195, 205, 210, 215, 220, 225],
+                        itemStyle: {
+                            color: '#008000'
+                        },
+                        lineStyle: {
+                            color: '#008000'
+                        }
+                    },
+                    {
+                        name: 'Deadlift',
+                        type: 'line',
+                        data: [275, 295, 315, 335, 355, 365, 375, 385, 395, 400, 405, 405],
+                        itemStyle: {
+                            color: '#FFB000'
+                        },
+                        lineStyle: {
+                            color: '#FFB000'
+                        }
+                    }
+                ]
+            };
+            
+            myChart.setOption(option);
+        });
+        
+        // Hobby detail data
+        const hobbyDetails = {
+            jeep: {
+                title: "2004 Jeep Wrangler LJ Restoration",
+                content: `
+                    <h3 class="text-amber-400 mb-4">PROJECT OVERVIEW</h3>
+                    <p class="mb-4">Frame-off restoration of a 2004 Jeep Wrangler LJ Unlimited, the legendary stretched wheelbase model. This project combines mechanical skills, fabrication, and attention to detail.</p>
+                    
+                    <h3 class="text-amber-400 mb-4">COMPLETED WORK</h3>
+                    <ul class="list-disc list-inside mb-4 space-y-1">
+                        <li>Complete frame sandblasting and powder coating</li>
+                        <li>Engine rebuild with new seals and gaskets</li>
+                        <li>OME suspension lift with new shocks</li>
+                        <li>Brake system overhaul with stainless lines</li>
+                        <li>Exhaust system replacement</li>
+                        <li>Wiring harness cleanup and labeling</li>
+                    </ul>
+                    
+                    <h3 class="text-amber-400 mb-4">CURRENT PHASE</h3>
+                    <p class="mb-4">Working on body rust repair and preparation for paint. Planning to restore the original Forest Green Pearl color while adding modern clear coat protection.</p>
+                    
+                    <h3 class="text-amber-400 mb-4">FUTURE PLANS</h3>
+                    <ul class="list-disc list-inside mb-4 space-y-1">
+                        <li>Interior restoration with new seats and carpet</li>
+                        <li>Hardtop refinishing and weatherstripping</li>
+                        <li>Upgraded audio system with modern connectivity</li>
+                        <li>LED lighting conversion</li>
+                        <li>Overland preparation with roof rack and accessories</li>
+                    </ul>
+                `
+            },
+            dnd: {
+                title: "Dungeons & Dragons Adventures",
+                content: `
+                    <h3 class="text-amber-400 mb-4">GAMING HISTORY</h3>
+                    <p class="mb-4">Started playing D&D in the 1980s with the Red Box Basic Set. Have been both a player and Dungeon Master for over 35 years, experiencing every edition from Basic to 5th.</p>
+                    
+                    <h3 class="text-amber-400 mb-4">CURRENT CAMPAIGNS</h3>
+                    <ul class="list-disc list-inside mb-4 space-y-1">
+                        <li><strong>Homebrew World:</strong> Aetheria - High fantasy setting</li>
+                        <li><strong>Party Level:</strong> Currently 12th level</li>
+                        <li><strong>Session Frequency:</strong> Bi-weekly 4-hour sessions</li>
+                        <li><strong>Campaign Length:</strong> 3+ years ongoing</li>
+                    </ul>
+                    
+                    <h3 class="text-amber-400 mb-4">DM STYLE</h3>
+                    <p class="mb-4">Focus on storytelling, character development, and tactical combat. Love creating homebrew content, maps, and miniatures. Emphasis on player agency and meaningful choices.</p>
+                    
+                    <h3 class="text-amber-400 mb-4">COLLECTION</h3>
+                    <ul class="list-disc list-inside mb-4 space-y-1">
+                        <li>Every 5th Edition book released</li>
+                        <li>Extensive miniature collection (500+)</li>
+                        <li>Custom terrain and battle maps</li>
+                        <li>3D printed monsters and props</li>
+                        <li>Digital tools for VTT and character management</li>
+                    </ul>
+                `
+            },
+            ham: {
+                title: "Amateur Radio Operations",
+                content: `
+                    <h3 class="text-amber-400 mb-4">RADIO JOURNEY</h3>
+                    <p class="mb-4">Interest in amateur radio stems from the technical aspects of RF communication and emergency preparedness. Currently studying for Technician and General class licenses.</p>
+                    
+                    <h3 class="text-amber-400 mb-4">EQUIPMENT</h3>
+                    <ul class="list-disc list-inside mb-4 space-y-1">
+                        <li>Yaesu FT-891 HF transceiver</li>
+                        <li>ICOM IC-7300 base station</li>
+                        <li>Various handheld VHF/UHF radios</li>
+                        <li>Dipole and vertical antennas</li>
+                        <li>Digital modes interface</li>
+                    </ul>
+                    
+                    <h3 class="text-amber-400 mb-4">INTERESTS</h3>
+                    <p class="mb-4">Digital modes (FT8, JS8Call), emergency communications, antenna building, and DX chasing. Planning to participate in Field Day and other amateur radio events.</p>
+                    
+                    <h3 class="text-amber-400 mb-4">GOALS</h3>
+                    <ul class="list-disc list-inside mb-4 space-y-1">
+                        <li>Obtain General class license</li>
+                        <li>Build a portable station for camping</li>
+                        <li>Learn CW (Morse code)</li>
+                        <li>Participate in emergency communications</li>
+                        <li>Build a homebrew antenna farm</li>
+                    </ul>
+                `
+            },
+            fitness: {
+                title: "Strength Training & Fitness",
+                content: `
+                    <h3 class="text-amber-400 mb-4">FITNESS PHILOSOPHY</h3>
+                    <p class="mb-4">Believe in functional strength and longevity over aesthetics. Focus on compound movements and progressive overload with proper form and recovery.</p>
+                    
+                    <h3 class="text-amber-400 mb-4">CURRENT PRS</h3>
+                    <ul class="list-disc list-inside mb-4 space-y-1">
+                        <li><strong>Squat:</strong> 315 lbs (5RM)</li>
+                        <li><strong>Bench Press:</strong> 225 lbs (5RM)</li>
+                        <li><strong>Deadlift:</strong> 405 lbs (5RM)</li>
+                        <li><strong>Overhead Press:</strong> 135 lbs (5RM)</li>
+                        <li><strong>Pull-ups:</strong> 15 consecutive</li>
+                    </ul>
+                    
+                    <h3 class="text-amber-400 mb-4">TRAINING SPLIT</h3>
+                    <p class="mb-4">5-day split focusing on strength and hypertrophy. Mix of heavy compound movements and accessory work with emphasis on progressive overload.</p>
+                    
+                    <h3 class="text-amber-400 mb-4">NUTRITION</h3>
+                    <ul class="list-disc list-inside mb-4 space-y-1">
+                        <li>High protein diet (1g per lb body weight)</li>
+                        <li>Whole foods emphasis</li>
+                        <li>Adequate hydration (1 gallon daily)</li>
+                        <li>Supplement with creatine and vitamin D</li>
+                        <li>Track macros and body composition</li>
+                    </ul>
+                `
+            },
+            wood: {
+                title: "Traditional Woodworking",
+                content: `
+                    <h3 class="text-amber-400 mb-4">WOODWORKING APPROACH</h3>
+                    <p class="mb-4">Focus on traditional hand tool techniques and joinery methods. Emphasis on craftsmanship over speed, using reclaimed lumber whenever possible.</p>
+                    
+                    <h3 class="text-amber-400 mb-4">TOOL COLLECTION</h3>
+                    <ul class="list-disc list-inside mb-4 space-y-1">
+                        <li>Hand saws (rip, crosscut, dovetail)</li>
+                        <li>Chisels and gouges</li>
+                        <li>Hand planes (block, jack, jointer)</li>
+                        <li>Marking and measuring tools</li>
+                        <li>Sharpening stones and strops</li>
+                    </ul>
+                    
+                    <h3 class="text-amber-400 mb-4">RECENT PROJECTS</h3>
+                    <ul class="list-disc list-inside mb-4 space-y-1">
+                        <li>Oak coffee table with hand-cut dovetails</li>
+                        <li>Pine workbench with traditional joinery</li>
+                        <li>Walnut cutting boards</li>
+                        <li>Sharpening station with storage</li>
+                        <li>Wooden hand planes</li>
+                    </ul>
+                    
+                    <h3 class="text-amber-400 mb-4">WORKSHOP</h3>
+                    <p class="mb-4">Small basement workshop with focus on hand tools and quiet work. Future plans include building a dedicated outbuilding for larger projects and machinery.</p>
+                `
+            },
+            gaming: {
+                title: "Retro Gaming Collection",
+                content: `
+                    <h3 class="text-amber-400 mb-4">GAMING HISTORY</h3>
+                    <p class="mb-4">Started with Atari 2600 in the early 80s and never stopped. Collection focuses on the golden age of gaming with emphasis on gameplay over graphics.</p>
+                    
+                    <h3 class="text-amber-400 mb-4">COLLECTION HIGHLIGHTS</h3>
+                    <ul class="list-disc list-inside mb-4 space-y-1">
+                        <li>Atari 2600 with 50+ cartridges</li>
+                        <li>Original Game Boy with Tetris</li>
+                        <li>Arcade cabinet (MAME)</li>
+                        <li>Various retro consoles and games</li>
+                        <li>Collection of gaming magazines from the 80s/90s</li>
+                    </ul>
+                    
+                    <h3 class="text-amber-400 mb-4">FAVORITE GAMES</h3>
+                    <ul class="list-disc list-inside mb-4 space-y-1">
+                        <li><strong>Adventure (Atari 2600):</strong> The original action-adventure</li>
+                        <li><strong>Pac-Man:</strong> Perfect arcade gameplay</li>
+                        <li><strong>Tetris:</strong> Pure puzzle perfection</li>
+                        <li><strong>Super Mario Bros:</strong> Platforming mastery</li>
+                        <li><strong>The Legend of Zelda:</strong> Adventure and exploration</li>
+                    </ul>
+                    
+                    <h3 class="text-amber-400 mb-4">MODERN RETRO</h3>
+                    <p class="mb-4">Also enjoy modern indie games with retro aesthetics. Appreciate pixel art, chiptune music, and gameplay-first design philosophy.</p>
+                `
+            }
+        };
+        
+        // Show hobby details modal
+        function showHobbyDetails(hobbyId) {
+            const modal = document.getElementById('hobby-modal');
+            const title = document.getElementById('hobby-modal-title');
+            const content = document.getElementById('hobby-modal-content');
+            
+            const hobby = hobbyDetails[hobbyId];
+            if (hobby) {
+                title.textContent = hobby.title;
+                content.innerHTML = hobby.content;
+                modal.classList.remove('hidden');
+            }
+        }
+        
+        // Close hobby modal
+        function closeHobbyModal() {
+            document.getElementById('hobby-modal').classList.add('hidden');
+        }
+        
+        // Close modal on escape key
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                closeHobbyModal();
+            }
+        });
+        
+        // Close modal on backdrop click
+        document.getElementById('hobby-modal').addEventListener('click', (e) => {
+            if (e.target.id === 'hobby-modal') {
+                closeHobbyModal();
+            }
+        });
+    </script>
+</body>
+</html>
