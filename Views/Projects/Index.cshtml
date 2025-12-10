@@ -1,0 +1,94 @@
+@model List<mcarthey.com.Models.Project>
+@{
+    ViewData["Title"] = "Projects";
+}
+
+<!-- Main Content -->
+<div class="max-w-7xl mx-auto pt-16">
+    <!-- Header -->
+    <div class="text-center mb-12 fade-in">
+        <div class="ascii-art text-xs mb-4">
+┌─┐┌─┐┌─┐┌─┐┌─┐┌─┐┌─┐┌─┐┌─┐┌─┐┌─┐┌─┐┌─┐┌─┐┌─┐┌─┐┌─┐
+│P││R││O││J││E││C││T││S││ ││P││O││R││T││F││O││L││I││O│
+└─┘└─┘└─┘└─┘└─┘└─┘└─┘└─┘└─┘└─┘└─┘└─┘└─┘└─┘└─┘└─┘└─┘└─┘
+        </div>
+        <h1 class="terminal-text text-3xl mb-4">DEVELOPMENT PROJECTS</h1>
+        <div class="terminal-text text-sm opacity-75 mb-6">
+            Compiled software portfolio | .NET C# MVC Specialist
+        </div>
+
+        <!-- Filter Buttons -->
+        <div class="flex flex-wrap justify-center gap-2 mb-8">
+            <button class="filter-button active" onclick="filterProjects('all')">ALL</button>
+            <button class="filter-button" onclick="filterProjects('web')">WEB</button>
+            <button class="filter-button" onclick="filterProjects('desktop')">DESKTOP</button>
+            <button class="filter-button" onclick="filterProjects('mobile')">MOBILE</button>
+        </div>
+    </div>
+
+    <!-- Hero Image -->
+    <div class="text-center mb-12 fade-in">
+        <img src="~/images/terminal-code.png" alt="Terminal Code" class="mx-auto rounded-lg border-2 border-green-500 shadow-lg" style="max-width: 500px; width: 100%;">
+    </div>
+
+    <!-- Projects Grid -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
+        @foreach (var project in Model)
+        {
+            <div class="project-card p-6 fade-in" data-category="@project.Category">
+                <div class="ascii-art text-xs mb-4" style="white-space: pre-line;">@project.AsciiArt</div>
+                <h3 class="terminal-text text-lg mb-2">@project.Name</h3>
+                <p class="terminal-text text-xs mb-4 opacity-75">
+                    @project.Description
+                </p>
+                <div class="mb-4">
+                    @foreach (var tech in project.Technologies)
+                    {
+                        <span class="tech-tag">@tech</span>
+                    }
+                </div>
+                <div class="terminal-text text-xs mb-2">
+                    Status: <span class="text-@project.StatusColor">@project.Status</span> | Year: @project.Year
+                </div>
+                @if (!string.IsNullOrEmpty(project.GitHubUrl))
+                {
+                    <a href="@project.GitHubUrl" target="_blank" class="terminal-text text-xs hover:text-amber-400 transition-colors">
+                        → View on GitHub
+                    </a>
+                }
+            </div>
+        }
+    </div>
+
+    <!-- GitHub Profile Link -->
+    <div class="text-center mb-12 fade-in">
+        <div class="terminal-text text-sm mb-4">
+            Explore more of my work on GitHub
+        </div>
+        <a href="https://github.com/mcarthey" target="_blank" class="nav-button inline-block">
+            VIEW GITHUB PROFILE
+        </a>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        function filterProjects(category) {
+            const cards = document.querySelectorAll('.project-card');
+            const buttons = document.querySelectorAll('.filter-button');
+
+            // Update button states
+            buttons.forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+
+            // Filter cards
+            cards.forEach(card => {
+                if (category === 'all' || card.dataset.category === category) {
+                    card.style.display = 'block';
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+        }
+    </script>
+}

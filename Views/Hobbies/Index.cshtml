@@ -1,0 +1,80 @@
+@model List<mcarthey.com.Models.Hobby>
+@{
+    ViewData["Title"] = "Hobbies";
+}
+
+<!-- Main Content -->
+<div class="max-w-7xl mx-auto pt-16">
+    <!-- Header -->
+    <div class="text-center mb-12 fade-in">
+        <div class="ascii-art text-xs mb-4">
+┌─┐┌─┐┌─┐┌─┐┌─┐┌─┐┌─┐┌─┐┌─┐┌─┐┌─┐┌─┐┌─┐┌─┐┌─┐┌─┐┌─┐
+│P││E││R││S││O││N││A││L││ ││I││N││T││E││R││E││S││T││S│
+└─┘└─┘└─┘└─┘└─┘└─┘└─┘└─┘└─┘└─┘└─┘└─┘└─┘└─┘└─┘└─┘└─┘└─┘
+        </div>
+        <h1 class="terminal-text text-3xl mb-4">BEYOND THE CODE</h1>
+        <div class="terminal-text text-sm opacity-75">
+            Hobbies, interests, and life outside of development
+        </div>
+    </div>
+
+    <!-- Hero Image -->
+    <div class="text-center mb-12 fade-in">
+        <img src="~/images/hobbies-collection.png" alt="Hobbies Collection" class="mx-auto rounded-lg border-2 border-green-500 shadow-lg" style="max-width: 600px; width: 100%;">
+    </div>
+
+    <!-- Hobbies Grid -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
+        @foreach (var hobby in Model)
+        {
+            <div class="hobby-card p-6 fade-in">
+                <div class="ascii-art text-xs mb-4" style="white-space: pre-line;">@hobby.AsciiArt</div>
+                <h3 class="terminal-text text-lg mb-2">@hobby.Name</h3>
+                <p class="terminal-text text-xs mb-4 opacity-75">
+                    @hobby.Description
+                </p>
+
+                <!-- Progress Bar -->
+                <div class="mb-4">
+                    <div class="terminal-text text-xs mb-1">Progress: @hobby.ProgressPercentage%</div>
+                    <div class="progress-bar" style="width: @hobby.ProgressPercentage%"></div>
+                </div>
+
+                <!-- Highlights -->
+                @if (hobby.Highlights.Any())
+                {
+                    <div class="terminal-text text-xs">
+                        <div class="mb-2 text-amber-400">Highlights:</div>
+                        <ul class="list-none space-y-1">
+                            @foreach (var highlight in hobby.Highlights)
+                            {
+                                <li>→ @highlight</li>
+                            }
+                        </ul>
+                    </div>
+                }
+            </div>
+        }
+    </div>
+
+    <!-- Life Balance Message -->
+    <div class="text-center mb-12 fade-in">
+        <div class="terminal-text text-sm mb-4 max-w-3xl mx-auto">
+            <div class="border border-green-500 border-opacity-50 p-6 rounded">
+                <div class="text-amber-400 mb-2">LIFE BALANCE</div>
+                While coding is my passion, these hobbies keep me grounded, healthy, and creative.
+                From restoring a Jeep to rolling dice in D&D campaigns, each pursuit teaches
+                problem-solving skills that translate back to development. The retro gaming
+                collection reminds me where it all started, and ham radio keeps me connected
+                to a community that shares the maker spirit.
+            </div>
+        </div>
+    </div>
+
+    <!-- Back to Terminal -->
+    <div class="text-center mb-12 fade-in">
+        <a href="@Url.Action("Index", "About")" class="nav-button inline-block">
+            ← BACK TO ABOUT
+        </a>
+    </div>
+</div>
