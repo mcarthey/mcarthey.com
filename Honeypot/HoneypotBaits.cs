@@ -179,6 +179,40 @@ public static class HoneypotBaits
         Body: "<html><body><h1>401 Unauthorized</h1><p>You are not authorized to view this page. Please log in with a valid manager account.</p></body></html>",
         StatusCode: 401);
 
+    // Legacy portfolio routes that used to be real pages. Now they log as
+    // "restricted" and serve a themed 401 — bots that scraped the old URLs
+    // land in the shame log; humans who bookmarked the old pages get a
+    // friendly path back to the console.
+    private static readonly BaitResponse Restricted = new(
+        Name: "restricted",
+        ContentType: "text/html; charset=utf-8",
+        Body: """
+            <!DOCTYPE html>
+            <html lang="en">
+            <head>
+            <meta charset="UTF-8">
+            <title>401 - Access Restricted</title>
+            <style>
+            body { background: #000; color: #33ff33; font-family: 'Courier New', monospace; padding: 40px; text-align: center; }
+            a { color: #ffbf00; text-decoration: none; border-bottom: 1px dotted #ffbf00; }
+            .box { border: 1px solid #33ff33; padding: 40px; max-width: 520px; margin: 60px auto; }
+            pre { text-align: left; margin: 0; white-space: pre-wrap; line-height: 1.6; }
+            </style>
+            </head>
+            <body>
+            <div class="box">
+            <pre>&gt; ACCESS DENIED
+
+              HTTP 401 - Authentication required.
+              This attempt has been logged.
+
+              Return to <a href="/">system console</a>.</pre>
+            </div>
+            </body>
+            </html>
+            """,
+        StatusCode: 401);
+
     private static readonly BaitResponse Adminer = new(
         Name: "adminer",
         ContentType: "text/html; charset=utf-8",
@@ -239,5 +273,16 @@ public static class HoneypotBaits
 
         ["/adminer.php"] = Adminer,
         ["/adminer/"] = Adminer,
+
+        // Legacy portfolio routes — now 401 traps.
+        ["/About"] = Restricted,
+        ["/About/"] = Restricted,
+        ["/About/Index"] = Restricted,
+        ["/Projects"] = Restricted,
+        ["/Projects/"] = Restricted,
+        ["/Projects/Index"] = Restricted,
+        ["/Hobbies"] = Restricted,
+        ["/Hobbies/"] = Restricted,
+        ["/Hobbies/Index"] = Restricted,
     }.ToFrozenDictionary(StringComparer.OrdinalIgnoreCase);
 }

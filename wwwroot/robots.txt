@@ -1,0 +1,9 @@
+# Crawlers welcome — this site's real pages are all public.
+# Honeypot bait paths are intentionally NOT listed here (mentioning
+# them would tip off scanners that they're traps).
+
+User-agent: *
+Allow: /
+Allow: /Shame
+
+Sitemap: https://mcarthey.com/sitemap.xml
