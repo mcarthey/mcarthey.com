@@ -5,6 +5,7 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddControllersWithViews();
 builder.Services.AddSingleton<HoneypotLogger>();
 builder.Services.AddHostedService(sp => sp.GetRequiredService<HoneypotLogger>());
+builder.Services.AddSingleton<HoneypotStats>();
 
 var app = builder.Build();
 

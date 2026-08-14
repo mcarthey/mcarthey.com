@@ -177,7 +177,7 @@ class RetroTerminal {
     }
 
     autoComplete(partialCommand) {
-        const commands = ['ABOUT', 'PROJECTS', 'HOBBIES', 'CONTACT', 'HELP', 'CLEAR', 'KONAMI', 'PACMAN', 'TETRIS'];
+        const commands = ['ABOUT', 'PROJECTS', 'HOBBIES', 'CONTACT', 'HELP', 'CLEAR', 'KONAMI', 'PACMAN', 'TETRIS', 'SHAME'];
         const matches = commands.filter(cmd => cmd.startsWith(partialCommand.toUpperCase()));
 
         if (matches.length === 1) {
@@ -228,6 +228,9 @@ class RetroTerminal {
                 break;
             case 'TETRIS':
                 this.triggerTetrisEasterEgg();
+                break;
+            case 'SHAME':
+                window.location.href = '/Shame';
                 break;
             case 'DIR':
                 this.showDirectory();

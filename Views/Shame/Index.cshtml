@@ -1,0 +1,176 @@
+@using mcarthey.com.Honeypot
+@model WallOfShameData
+@{
+    ViewData["Title"] = "Wall of Shame";
+    var age = DateTimeOffset.UtcNow - Model.GeneratedAt;
+    var ageSec = (int)age.TotalSeconds;
+}
+
+<div class="max-w-6xl mx-auto">
+
+    <div class="ascii-art text-xs mb-4 text-center">
+ _       __      ____   ____   ____  _____   _____ __  __  ___    __  ___   ____
+| |     / /___ _/ / /  / __ \ / __/ / ___/  / ___// / / / / _ |  /  |/  /  / __/
+| | /| / // _ `/ / /  / /_/ // _/  / /__    \__ \/ /_/ / / __ | / /|_/ /  / _/
+|_/|__/  \_,_/_/_/   \____//_/    \___/   /___/\____/ /_/ |_|/_/  /_/  /___/
+    </div>
+
+    <div class="terminal-text text-sm mb-6 text-center">
+        <span class="text-amber-400">C:\></span> SHOW WALL --window=@(Model.WindowDays)d --generated=@(ageSec)s-ago
+    </div>
+
+    @if (Model.TotalHits == 0)
+    {
+        <div class="terminal-text text-center mt-12 opacity-70">
+            <div class="mb-2">&gt; NO HITS YET.</div>
+            <div class="text-xs">The honeypot is armed. Bots will arrive; they always do.</div>
+        </div>
+    }
+    else
+    {
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8 terminal-text text-center">
+            <div class="border border-green-500 border-opacity-40 p-4">
+                <div class="text-xs opacity-70">TOTAL HITS (@Model.WindowDays.ToString()d WINDOW)</div>
+                <div class="text-3xl mt-2">@Model.TotalHits.ToString("N0")</div>
+            </div>
+            <div class="border border-green-500 border-opacity-40 p-4">
+                <div class="text-xs opacity-70">LAST 24 HOURS</div>
+                <div class="text-3xl mt-2">@Model.Hits24h.ToString("N0")</div>
+            </div>
+            <div class="border border-green-500 border-opacity-40 p-4">
+                <div class="text-xs opacity-70">UNIQUE ATTACKERS</div>
+                <div class="text-3xl mt-2">@Model.TopIps.Count.ToString("N0")+</div>
+            </div>
+        </div>
+
+        <div class="terminal-text text-sm mb-2 mt-8">
+            <span class="text-amber-400">&gt;&gt;</span> TOP BAIT PATHS
+        </div>
+        <table class="w-full mb-8 terminal-text text-xs border-collapse">
+            <thead>
+                <tr class="border-b border-green-500 border-opacity-40">
+                    <th class="text-left p-2">RANK</th>
+                    <th class="text-left p-2">BAIT</th>
+                    <th class="text-right p-2">HITS</th>
+                </tr>
+            </thead>
+            <tbody>
+                @{ var rank = 1; }
+                @foreach (var b in Model.TopBaits)
+                {
+                    <tr class="border-b border-green-500 border-opacity-10">
+                        <td class="p-2 opacity-70">#@rank</td>
+                        <td class="p-2">@b.Bait</td>
+                        <td class="p-2 text-right">@b.Count.ToString("N0")</td>
+                    </tr>
+                    rank++;
+                }
+            </tbody>
+        </table>
+
+        <div class="terminal-text text-sm mb-2 mt-8">
+            <span class="text-amber-400">&gt;&gt;</span> TOP ATTACKER IPs
+        </div>
+        <table class="w-full mb-8 terminal-text text-xs border-collapse">
+            <thead>
+                <tr class="border-b border-green-500 border-opacity-40">
+                    <th class="text-left p-2">IP</th>
+                    <th class="text-right p-2">HITS</th>
+                    <th class="text-right p-2">LAST SEEN (UTC)</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var ip in Model.TopIps)
+                {
+                    <tr class="border-b border-green-500 border-opacity-10">
+                        <td class="p-2">@ip.Ip</td>
+                        <td class="p-2 text-right">@ip.Count.ToString("N0")</td>
+                        <td class="p-2 text-right opacity-70">@ip.LastSeen.ToString("yyyy-MM-dd HH:mm")</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+
+        <div class="terminal-text text-sm mb-2 mt-8">
+            <span class="text-amber-400">&gt;&gt;</span> TOP USER-AGENTS
+        </div>
+        <table class="w-full mb-8 terminal-text text-xs border-collapse">
+            <thead>
+                <tr class="border-b border-green-500 border-opacity-40">
+                    <th class="text-left p-2">USER-AGENT</th>
+                    <th class="text-right p-2">HITS</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var ua in Model.TopUserAgents)
+                {
+                    <tr class="border-b border-green-500 border-opacity-10">
+                        <td class="p-2 break-all">@(ua.UserAgent.Length > 100 ? ua.UserAgent[..100] + "..." : ua.UserAgent)</td>
+                        <td class="p-2 text-right">@ua.Count.ToString("N0")</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+
+        @if (Model.FunnyPosts.Any())
+        {
+            <div class="terminal-text text-sm mb-2 mt-8">
+                <span class="text-amber-400">&gt;&gt;</span> BRUTE-FORCE ATTEMPTS (CREDS PARTIALLY REDACTED)
+            </div>
+            <table class="w-full mb-8 terminal-text text-xs border-collapse">
+                <thead>
+                    <tr class="border-b border-green-500 border-opacity-40">
+                        <th class="text-left p-2">WHEN</th>
+                        <th class="text-left p-2">BAIT</th>
+                        <th class="text-left p-2">IP</th>
+                        <th class="text-left p-2">ATTEMPTED PAYLOAD</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var p in Model.FunnyPosts)
+                    {
+                        <tr class="border-b border-green-500 border-opacity-10">
+                            <td class="p-2 opacity-70 whitespace-nowrap">@p.Timestamp.ToString("MM-dd HH:mm")</td>
+                            <td class="p-2">@p.Bait</td>
+                            <td class="p-2 whitespace-nowrap">@p.RemoteIp</td>
+                            <td class="p-2 break-all">@p.BodySnippet</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        }
+
+        <div class="terminal-text text-sm mb-2 mt-8">
+            <span class="text-amber-400">&gt;&gt;</span> RECENT ACTIVITY
+        </div>
+        <table class="w-full mb-8 terminal-text text-xs border-collapse">
+            <thead>
+                <tr class="border-b border-green-500 border-opacity-40">
+                    <th class="text-left p-2">WHEN</th>
+                    <th class="text-left p-2">IP</th>
+                    <th class="text-left p-2">METHOD</th>
+                    <th class="text-left p-2">PATH</th>
+                    <th class="text-left p-2">BAIT</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var h in Model.RecentHits)
+                {
+                    <tr class="border-b border-green-500 border-opacity-10">
+                        <td class="p-2 opacity-70 whitespace-nowrap">@h.Timestamp.ToString("MM-dd HH:mm:ss")</td>
+                        <td class="p-2 whitespace-nowrap">@h.RemoteIp</td>
+                        <td class="p-2">@h.Method</td>
+                        <td class="p-2 break-all">@h.Path</td>
+                        <td class="p-2">@h.Bait</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    }
+
+    <div class="terminal-text text-xs mt-8 opacity-50 text-center">
+        &gt; DATA REFRESHES EVERY 60S. WINDOW: LAST @Model.WindowDays DAYS.
+        &nbsp;&nbsp; ALL VISITS ARE LOGGED. YOURS TOO.
+    </div>
+
+</div>
