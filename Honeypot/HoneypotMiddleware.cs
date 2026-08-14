@@ -44,10 +44,20 @@ public sealed class HoneypotMiddleware
             ctx.Request.Body.Position = 0;
         }
 
+        // Prefer X-Forwarded-For when present — behind Caddy on localhost,
+        // ctx.Connection.RemoteIpAddress always resolves to ::1/127.0.0.1.
+        // Kestrel only binds to 127.0.0.1 in prod so the header is trusted
+        // (no path for an external client to spoof it). Take the leftmost
+        // entry from the XFF chain — that's the original client per RFC 7239.
+        var xff = ctx.Request.Headers["X-Forwarded-For"].ToString();
+        var remoteIp = !string.IsNullOrEmpty(xff)
+            ? xff.Split(',', 2)[0].Trim()
+            : ctx.Connection.RemoteIpAddress?.ToString() ?? "";
+
         var entry = new HoneypotEntry(
             Timestamp: DateTimeOffset.UtcNow,
             Bait: bait.Name,
-            RemoteIp: ctx.Connection.RemoteIpAddress?.ToString() ?? "",
+            RemoteIp: remoteIp,
             Method: ctx.Request.Method,
             Path: path,
             QueryString: ctx.Request.QueryString.HasValue ? ctx.Request.QueryString.Value : null,
