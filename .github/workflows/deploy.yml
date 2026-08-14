@@ -1,0 +1,118 @@
+# Deploy mcarthey.com to the Hetzner VPS (learnedgeek-host).
+#
+# Triggers:
+#   - Push to main (automatic)
+#   - Manual via Actions tab → "Deploy to Hetzner" → "Run workflow"
+#
+# Pattern mirrors LearnedGeek/.github/workflows/deploy.yml but stripped:
+# no npm/Tailwind (Tailwind is CDN here), no appsettings template (site
+# has no secrets), no database. Just build, publish, tar-over-SSH,
+# atomic swap, smoke test.
+#
+# Required GitHub repo secrets:
+#   DEPLOY_SSH_KEY — Private key authorized on learnedgeek-host for the
+#                    deploy user. Reuse the existing key from the other
+#                    sites; no need for a per-site key.
+#   DEPLOY_HOST    — 5.161.205.21 (or host.learnedgeek.com).
+#   DEPLOY_USER    — root (matches current LearnedGeek deploy setup).
+
+name: Deploy to Hetzner
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+concurrency:
+  group: deploy-mcarthey
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+
+      - name: Restore + build
+        run: |
+          dotnet restore
+          dotnet build --no-restore --configuration Release
+
+      - name: Publish (linux-x64, framework-dependent)
+        run: |
+          dotnet publish mcarthey.com.csproj \
+            --configuration Release \
+            --runtime linux-x64 \
+            --self-contained false \
+            --output ./publish
+
+      - name: Configure SSH
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.DEPLOY_SSH_KEY }}" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+          ssh-keyscan -H "${{ secrets.DEPLOY_HOST }}" >> ~/.ssh/known_hosts
+
+      - name: Transfer publish artifact to staging (tar over SSH)
+        run: |
+          # Piped-stdin SSH — NO systemctl calls in this block. The
+          # piped-stdin context sporadically loses connection to the
+          # system D-Bus, causing systemctl to hit polkit or fail unit
+          # lookup. Service management moves to a separate SSH call
+          # (no piped stdin) below. Pattern lifted from Preply's
+          # deploy-dashboard-hetzner.yml after that bug was reproduced.
+          cd publish
+          tar -cf - . | ssh -i ~/.ssh/deploy_key \
+            "${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }}" \
+            'set -e
+             STAGING=/var/www/mcarthey.new
+             rm -rf "$STAGING"
+             mkdir -p "$STAGING"
+             cd "$STAGING"
+             tar -xf -
+             chown -R www-data:www-data "$STAGING"'
+
+      - name: Stop, atomic swap, start
+        run: |
+          # Plain SSH command execution (no piped stdin) so systemctl
+          # gets a clean D-Bus connection.
+          ssh -i ~/.ssh/deploy_key \
+            "${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }}" \
+            'set -e
+             STAGING=/var/www/mcarthey.new
+             ACTIVE=/var/www/mcarthey
+             PREV=/var/www/mcarthey.prev
+             systemctl stop mcarthey
+             if [ -d "$ACTIVE" ]; then
+               rm -rf "$PREV"
+               mv "$ACTIVE" "$PREV"
+             fi
+             mv "$STAGING" "$ACTIVE"
+             systemctl start mcarthey'
+
+      - name: Smoke test the deploy
+        run: |
+          # Poll the public URL for up to ~30 seconds. First deploy runs
+          # before the DNS flip — in that case, hit the host directly on
+          # the site's Kestrel port via SSH tunnel or skip this step.
+          # After DNS flip, mcarthey.com should respond.
+          for i in $(seq 1 15); do
+            STATUS=$(curl -s -o /dev/null -w "%{http_code}" https://mcarthey.com || echo "000")
+            if [[ "$STATUS" -ge 200 && "$STATUS" -lt 400 ]]; then
+              echo "mcarthey.com responded with HTTP $STATUS after attempt ${i}"
+              exit 0
+            fi
+            echo "Attempt $i: HTTP $STATUS — retrying in 2s"
+            sleep 2
+          done
+          echo "Health check failed: no 2xx/3xx response in 30 seconds"
+          echo "If this is the first deploy and DNS hasn't flipped yet, this failure is expected."
+          exit 1

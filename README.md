@@ -8,7 +8,7 @@ This website combines nostalgia for classic computing (Commodore VIC-20, Atari 2
 
 ## Technology Stack
 
-- **Framework**: ASP.NET Core 8 MVC
+- **Framework**: ASP.NET Core 10 MVC
 - **Language**: C#
 - **Frontend**:
   - HTML5/CSS3
@@ -16,7 +16,7 @@ This website combines nostalgia for classic computing (Commodore VIC-20, Atari 2
   - Tailwind CSS (CDN)
   - Anime.js for animations
   - Typed.js for terminal effects
-- **Deployment**: Optimized for SmarterASP.NET hosting
+- **Deployment**: GitHub Actions → Hetzner (learnedgeek-host), Caddy reverse proxy, systemd unit `mcarthey`
 
 ## Features
 
@@ -77,7 +77,7 @@ mcarthey.com/
 ## Running Locally
 
 ### Prerequisites
-- .NET 8 SDK or later
+- .NET 10 SDK
 - Any modern web browser
 
 ### Steps

@@ -69,7 +69,3 @@ artifacts/
 **/packages/*
 *.nuget.props
 *.nuget.targets
-
-# Don't ignore publish profiles
-!Properties/PublishProfiles/
-/mcarthey.zip
