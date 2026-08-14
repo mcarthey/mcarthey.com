@@ -1,4 +1,4 @@
-// GEN-X DEVELOPER TERMINAL - Optimized JavaScript
+// MCARTHEY-VAX-01 SYSTEM CONSOLE — client-side terminal shell.
 class RetroTerminal {
     constructor() {
         this.commandHistory = [];
@@ -55,16 +55,19 @@ class RetroTerminal {
 
         const bootText = document.getElementById('boot-text');
         const bootMessages = [
-            "COMMODORE VIC-20 EMULATION LOADING...",
-            "MEMORY CHECK: 3583 BYTES FREE",
-            "**** COMMODORE 64 BASIC V2 ****",
-            "64K RAM SYSTEM  38911 BASIC BYTES FREE",
-            "READY.",
+            "MCARTHEY-VAX-01 SYSTEM CONSOLE",
+            "VMS V7.3-2 (bootstrap loaded)",
             "",
-            "GEN-X DEVELOPER TERMINAL v2025.12.10",
-            "Initializing retro computing environment...",
-            "Loading ASP.NET Core MVC framework...",
-            "Starting command interface...",
+            "Memory check ....... 128MB OK",
+            "Disk DUA0: ......... [SYSDEVICE] mounted",
+            "Disk DUA1: ......... [USERDATA]  mounted",
+            "Network XQA0: ...... online (10.0.0.7)",
+            "Audit subsystem .... /var/log/access ACTIVE",
+            "IDS subsystem ...... /var/log/intrusion ACTIVE",
+            "",
+            "WARNING: This system is monitored. All access is logged.",
+            "",
+            "SYSTEM READY.",
             ""
         ];
 
@@ -177,7 +180,9 @@ class RetroTerminal {
     }
 
     autoComplete(partialCommand) {
-        const commands = ['ABOUT', 'PROJECTS', 'HOBBIES', 'CONTACT', 'HELP', 'CLEAR', 'KONAMI', 'PACMAN', 'TETRIS', 'SHAME'];
+        // Autocomplete deliberately excludes easter-egg commands (KONAMI, PACMAN, TETRIS)
+        // and any future hack-puzzle commands — discovery is part of the fun.
+        const commands = ['HELP', 'CLEAR', 'SHAME', 'DIR', 'VER', 'TIME', 'DATE'];
         const matches = commands.filter(cmd => cmd.startsWith(partialCommand.toUpperCase()));
 
         if (matches.length === 1) {
@@ -202,18 +207,6 @@ class RetroTerminal {
 
         // Process the command
         switch (command.toUpperCase()) {
-            case 'ABOUT':
-                window.location.href = '/About';
-                break;
-            case 'PROJECTS':
-                window.location.href = '/Projects';
-                break;
-            case 'HOBBIES':
-                window.location.href = '/Hobbies';
-                break;
-            case 'CONTACT':
-                this.showContactInfo();
-                break;
             case 'HELP':
                 this.showHelp();
                 break;
@@ -271,37 +264,18 @@ class RetroTerminal {
         }
     }
 
-    showContactInfo() {
-        this.displayOutput('');
-        this.displayOutput('=== CONTACT INFORMATION ===', 'success');
-        this.displayOutput('GitHub: github.com/mcarthey');
-        this.displayOutput('LinkedIn: linkedin.com/in/markmcarthey');
-        this.displayOutput('');
-        this.displayOutput('Preferred contact method: GitHub or LinkedIn');
-        this.displayOutput('Response time: Usually within 24 hours');
-    }
-
     showHelp() {
         this.displayOutput('');
         this.displayOutput('=== AVAILABLE COMMANDS ===', 'success');
-        this.displayOutput('ABOUT    - View developer biography');
-        this.displayOutput('PROJECTS - Browse software portfolio');
-        this.displayOutput('HOBBIES  - Explore personal interests');
-        this.displayOutput('CONTACT  - Display contact information');
-        this.displayOutput('HELP     - Show this help message');
+        this.displayOutput('HELP     - Show this message');
         this.displayOutput('CLEAR    - Clear the screen');
+        this.displayOutput('SHAME    - Wall of shame (recent intrusion attempts)');
         this.displayOutput('DIR      - List directory contents');
         this.displayOutput('VER      - Show system version');
         this.displayOutput('TIME     - Display current time');
         this.displayOutput('DATE     - Display current date');
         this.displayOutput('');
-        this.displayOutput('=== EASTER EGGS ===', 'success');
-        this.displayOutput('KONAMI   - Classic cheat code');
-        this.displayOutput('PACMAN   - Gaming reference');
-        this.displayOutput('TETRIS   - Puzzle game tribute');
-        this.displayOutput('');
-        this.displayOutput('Navigation: Use arrow keys for command history');
-        this.displayOutput('Auto-complete: Press TAB for command suggestions');
+        this.displayOutput('Arrow keys navigate command history. TAB auto-completes.');
     }
 
     clearScreen() {
@@ -311,24 +285,24 @@ class RetroTerminal {
 
     showDirectory() {
         this.displayOutput('');
-        this.displayOutput(' Directory of C:\\', 'success');
+        this.displayOutput(' Directory of /', 'success');
         this.displayOutput('');
-        this.displayOutput('12/10/2025  10:00 PM    <DIR>          ABOUT');
-        this.displayOutput('12/10/2025  10:00 PM    <DIR>          PROJECTS');
-        this.displayOutput('12/10/2025  10:00 PM    <DIR>          HOBBIES');
-        this.displayOutput('12/10/2025  10:00 PM    <DIR>          CONTACT');
-        this.displayOutput('12/10/2025  10:00 PM           1337     README.TXT');
-        this.displayOutput('               1 File(s)           1337 bytes');
-        this.displayOutput('               4 Dir(s)    999,999,999 bytes free');
+        this.displayOutput('drwxr-xr-x  root  4096  Aug 14 22:00  etc/');
+        this.displayOutput('drwxr-xr-x  root  4096  Aug 14 22:00  var/');
+        this.displayOutput('drwxr-xr-x  root  4096  Aug 14 22:00  home/');
+        this.displayOutput('drwxr-xr-x  root  4096  Aug 14 22:00  usr/');
+        this.displayOutput('-rw-r--r--  root   256  Aug 14 22:00  README');
+        this.displayOutput('');
+        this.displayOutput('Access to /etc, /var, /home restricted to authenticated users.');
     }
 
     showVersion() {
         this.displayOutput('');
-        this.displayOutput('GEN-X DEVELOPER TERMINAL', 'success');
-        this.displayOutput('Version 2025.12.10');
-        this.displayOutput('Built with: ASP.NET Core 8, C# MVC');
-        this.displayOutput('Developer: Mark McArthey');
-        this.displayOutput('Theme: Commodore VIC-20 / Atari 2600 Retro');
+        this.displayOutput('MCARTHEY-VAX-01 SYSTEM CONSOLE', 'success');
+        this.displayOutput('Version 3.14.15  (build 8628)');
+        this.displayOutput('Kernel:   VMS V7.3-2');
+        this.displayOutput('Uptime:   14847 days, 02:41:17');
+        this.displayOutput('Operator: [redacted]');
     }
 
     showTime() {
@@ -389,13 +363,6 @@ function skipBootSequence() {
         // Remember preference
         localStorage.setItem('skipBootSequence', 'true');
         window.terminal.skipBootSequence();
-    }
-}
-
-// Global function for showing contact info
-function showContactInfo() {
-    if (window.terminal) {
-        window.terminal.showContactInfo();
     }
 }
 
