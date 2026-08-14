@@ -1,26 +1,28 @@
-using Microsoft.AspNetCore.Builder;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
+using mcarthey.com.Honeypot;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
 builder.Services.AddControllersWithViews();
+builder.Services.AddSingleton<HoneypotLogger>();
+builder.Services.AddHostedService(sp => sp.GetRequiredService<HoneypotLogger>());
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler("/Home/Error");
     app.UseHsts();
 }
 
+// Honeypot BEFORE HTTPS redirect + routing. Many bots don't follow 307s;
+// putting the trap ahead of the redirect captures them either way. Real
+// human traffic to Home/About/Projects/Hobbies never touches bait paths,
+// so the redirect still promotes those requests normally below.
+app.UseMiddleware<HoneypotMiddleware>();
+
 app.UseHttpsRedirection();
 app.UseStaticFiles();
-
 app.UseRouting();
-
 app.UseAuthorization();
 
 app.MapControllerRoute(
