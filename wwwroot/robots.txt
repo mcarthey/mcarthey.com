@@ -1,9 +1,17 @@
-# Crawlers welcome — this site's real pages are all public.
-# Honeypot bait paths are intentionally NOT listed here (mentioning
-# them would tip off scanners that they're traps).
+# Real crawlers welcome -- this site's real pages are all public.
 
 User-agent: *
 Allow: /
 Allow: /Shame
+
+# The paths below LOOK sensitive and are marked Disallow.
+# They are NOT actually sensitive -- they are honeypot bait.
+# Bots that specifically visit disallowed paths (because "disallowed"
+# reads as "valuable") land in a themed 401/informational page and
+# get logged as "robots-inverse crawlers" on /Shame.
+Disallow: /admin/vault/
+Disallow: /backup/
+Disallow: /secret/
+Disallow: /internal/
 
 Sitemap: https://mcarthey.com/sitemap.xml

@@ -11,13 +11,13 @@ builder.Services.AddHostedService(sp => sp.GetRequiredService<HoneypotLogger>())
 builder.Services.AddSingleton<HoneypotStats>();
 builder.Services.AddSingleton<GameSession>();
 
-// Trust X-Forwarded-For and X-Forwarded-Proto from Caddy. Kestrel binds
-// localhost only in prod, so no external client can spoof these.
+// Trust X-Forwarded-For and X-Forwarded-Proto from Caddy on localhost.
+// Do NOT clear KnownIPNetworks -- the default includes loopback, which
+// is exactly what we need (Caddy connects to Kestrel from 127.0.0.1).
+// Kestrel binds localhost only in prod so external clients can't spoof.
 builder.Services.Configure<ForwardedHeadersOptions>(o =>
 {
     o.ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto;
-    o.KnownIPNetworks.Clear();
-    o.KnownProxies.Clear();
 });
 
 // DataProtection with a persistent key ring -- signs the hack session cookie.

@@ -60,6 +60,10 @@ public sealed class HoneypotStats
         var funnyPosts = new List<HitSummary>();
         var successfulCracks = new List<HitSummary>();
 
+        // Per-IP bait sets for taxonomy classification.
+        var perIpBaits = new Dictionary<string, HashSet<string>>();
+        var perIpTotal = new Dictionary<string, int>();
+
         var files = Directory.EnumerateFiles(_logDir, "*.jsonl")
             .Select(p => (Path: p, Name: Path.GetFileNameWithoutExtension(p)))
             .Where(f => DateTime.TryParse(f.Name, out var d) && d >= cutoff.UtcDateTime.Date)
@@ -86,6 +90,11 @@ public sealed class HoneypotStats
                         ipCounts[entry.RemoteIp] = agg with { Count = agg.Count + 1, LastSeen = entry.Timestamp };
                     else
                         ipCounts[entry.RemoteIp] = new IpAgg(entry.RemoteIp, 1, entry.Timestamp);
+
+                    if (!perIpBaits.TryGetValue(entry.RemoteIp, out var set))
+                        perIpBaits[entry.RemoteIp] = set = new HashSet<string>();
+                    set.Add(entry.Bait);
+                    perIpTotal[entry.RemoteIp] = perIpTotal.GetValueOrDefault(entry.RemoteIp) + 1;
                 }
 
                 if (!string.IsNullOrEmpty(entry.UserAgent))
@@ -123,8 +132,84 @@ public sealed class HoneypotStats
                 .Select(kv => new UserAgentAgg(kv.Key, kv.Value)).ToList(),
             RecentHits: recentHits.OrderByDescending(h => h.Timestamp).Take(25).ToList(),
             FunnyPosts: funnyPosts.OrderByDescending(h => h.Timestamp).Take(15).ToList(),
-            SuccessfulCracks: successfulCracks.OrderByDescending(h => h.Timestamp).Take(20).ToList());
+            SuccessfulCracks: successfulCracks.OrderByDescending(h => h.Timestamp).Take(20).ToList(),
+            SpeciesCatalog: BuildSpeciesCatalog(perIpBaits, perIpTotal, ipCounts));
     }
+
+    // Classifies each IP into a species based on which bait categories they hit.
+    // Rules are priority-ordered; first match wins. Rare/interesting species
+    // sort to the top so they're visible on the shame page.
+    private static List<SpeciesEntry> BuildSpeciesCatalog(
+        Dictionary<string, HashSet<string>> perIpBaits,
+        Dictionary<string, int> perIpTotal,
+        Dictionary<string, IpAgg> ipCounts)
+    {
+        var list = new List<SpeciesEntry>();
+        foreach (var (ip, baits) in perIpBaits)
+        {
+            var species = Classify(baits);
+            list.Add(new SpeciesEntry(
+                Ip: ip,
+                Species: species,
+                Hits: perIpTotal[ip],
+                UniqueBaits: baits.Count,
+                LastSeen: ipCounts.TryGetValue(ip, out var agg) ? agg.LastSeen : DateTimeOffset.MinValue,
+                SpeciesRank: SpeciesRank(species)));
+        }
+        // Interesting species (low rank number) first, then by hits.
+        return list
+            .OrderBy(e => e.SpeciesRank)
+            .ThenByDescending(e => e.Hits)
+            .Take(30)
+            .ToList();
+    }
+
+    private static string Classify(HashSet<string> baits)
+    {
+        bool Has(string b) => baits.Contains(b);
+        bool HasAny(params string[] bs) => bs.Any(b => baits.Contains(b));
+        int Count(params string[] bs) => bs.Count(b => baits.Contains(b));
+
+        if (Has("crack-success")) return "🏆 Cracker (welcomed)";
+        if (Has("llm-caught")) return "🤖 LLM scanner";
+        if (Count("vault", "backup-dir", "secret", "internal-admin") >= 2) return "🕵 Robots-inverse crawler";
+        if (Has("dotenv") && Has("api-internal")) return "🧠 Env-parser (Tier 2)";
+        if (HasAny("wp-plugins", "wp-users", "wp-backup") && HasAny("wp-login", "wp-setup"))
+            return "🕸 WP spider (HTML-parsing)";
+        if (HasAny("phpma-export", "phpma-import") && Has("phpmyadmin"))
+            return "🕸 phpMyAdmin spider";
+        if (Has("cookie-tamper")) return "🔓 Cookie-forger";
+        if (Has("meta-cheat")) return "🎯 Meta-cheater";
+        if (Has("crack-attempt")) return "🔨 Brute-forcer";
+        if (baits.Count >= 5) return "🎣 Multi-tool scanner";
+        if (baits.Count == 1)
+        {
+            var only = baits.First();
+            if (only == "wp-login") return "👟 WP-only drive-by";
+            if (only == "dotenv") return "👟 .env grabber";
+            if (only.StartsWith("git")) return "👟 git leak scanner";
+            if (only == "restricted") return "🚪 Old-URL follower";
+            return "👟 Drive-by scanner";
+        }
+        return "🔍 Explorer";
+    }
+
+    // Lower = more interesting = sorted higher on the wall.
+    private static int SpeciesRank(string species) => species switch
+    {
+        "🏆 Cracker (welcomed)" => 0,
+        "🤖 LLM scanner" => 1,
+        "🕵 Robots-inverse crawler" => 2,
+        "🧠 Env-parser (Tier 2)" => 3,
+        "🕸 WP spider (HTML-parsing)" => 4,
+        "🕸 phpMyAdmin spider" => 5,
+        "🔓 Cookie-forger" => 6,
+        "🎯 Meta-cheater" => 7,
+        "🔨 Brute-forcer" => 8,
+        "🎣 Multi-tool scanner" => 9,
+        "🔍 Explorer" => 10,
+        _ => 11,  // drive-bys
+    };
 
     // Redact credential-shaped values in form-urlencoded POST bodies.
     // Keeps username visible (juice for the wall), redacts password-shaped fields.
@@ -158,13 +243,15 @@ public sealed record WallOfShameData(
     List<UserAgentAgg> TopUserAgents,
     List<HitSummary> RecentHits,
     List<HitSummary> FunnyPosts,
-    List<HitSummary> SuccessfulCracks)
+    List<HitSummary> SuccessfulCracks,
+    List<SpeciesEntry> SpeciesCatalog)
 {
     public static readonly WallOfShameData Empty = new(0, 0, 30, DateTimeOffset.UtcNow,
-        new(), new(), new(), new(), new(), new());
+        new(), new(), new(), new(), new(), new(), new());
 }
 
 public sealed record BaitAgg(string Bait, int Count);
 public sealed record IpAgg(string Ip, int Count, DateTimeOffset LastSeen);
 public sealed record UserAgentAgg(string UserAgent, int Count);
 public sealed record HitSummary(DateTimeOffset Timestamp, string Bait, string RemoteIp, string Method, string Path, string? BodySnippet);
+public sealed record SpeciesEntry(string Ip, string Species, int Hits, int UniqueBaits, DateTimeOffset LastSeen, int SpeciesRank);

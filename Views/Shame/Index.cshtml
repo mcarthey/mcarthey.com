@@ -43,6 +43,36 @@
             </div>
         </div>
 
+        @if (Model.SpeciesCatalog.Any())
+        {
+            <div class="terminal-text text-sm mb-2 mt-8">
+                <span class="text-amber-400">&gt;&gt;</span> SPECIES CATALOG  (behavioral classification per IP)
+            </div>
+            <table class="w-full mb-8 terminal-text text-xs border-collapse">
+                <thead>
+                    <tr class="border-b border-green-500 border-opacity-40">
+                        <th class="text-left p-2">IP</th>
+                        <th class="text-left p-2">SPECIES</th>
+                        <th class="text-right p-2">HITS</th>
+                        <th class="text-right p-2">UNIQUE BAITS</th>
+                        <th class="text-right p-2">LAST SEEN (UTC)</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var s in Model.SpeciesCatalog)
+                    {
+                        <tr class="border-b border-green-500 border-opacity-10">
+                            <td class="p-2 whitespace-nowrap">@s.Ip</td>
+                            <td class="p-2">@s.Species</td>
+                            <td class="p-2 text-right">@s.Hits.ToString("N0")</td>
+                            <td class="p-2 text-right">@s.UniqueBaits</td>
+                            <td class="p-2 text-right opacity-70 whitespace-nowrap">@s.LastSeen.ToString("yyyy-MM-dd HH:mm")</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        }
+
         <div class="terminal-text text-sm mb-2 mt-8">
             <span class="text-amber-400">&gt;&gt;</span> TOP BAIT PATHS
         </div>
