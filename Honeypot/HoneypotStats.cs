@@ -171,6 +171,7 @@ public sealed class HoneypotStats
         int Count(params string[] bs) => bs.Count(b => baits.Contains(b));
 
         if (Has("crack-success")) return "🏆 Cracker (welcomed)";
+        if (Has("konami")) return "🕹 Konami-code enterer";
         if (Has("llm-caught")) return "🤖 LLM scanner";
         if (Count("vault", "backup-dir", "secret", "internal-admin") >= 2) return "🕵 Robots-inverse crawler";
         if (Has("dotenv") && Has("api-internal")) return "🧠 Env-parser (Tier 2)";
@@ -198,17 +199,18 @@ public sealed class HoneypotStats
     private static int SpeciesRank(string species) => species switch
     {
         "🏆 Cracker (welcomed)" => 0,
-        "🤖 LLM scanner" => 1,
-        "🕵 Robots-inverse crawler" => 2,
-        "🧠 Env-parser (Tier 2)" => 3,
-        "🕸 WP spider (HTML-parsing)" => 4,
-        "🕸 phpMyAdmin spider" => 5,
-        "🔓 Cookie-forger" => 6,
-        "🎯 Meta-cheater" => 7,
-        "🔨 Brute-forcer" => 8,
-        "🎣 Multi-tool scanner" => 9,
-        "🔍 Explorer" => 10,
-        _ => 11,  // drive-bys
+        "🕹 Konami-code enterer" => 1,
+        "🤖 LLM scanner" => 2,
+        "🕵 Robots-inverse crawler" => 3,
+        "🧠 Env-parser (Tier 2)" => 4,
+        "🕸 WP spider (HTML-parsing)" => 5,
+        "🕸 phpMyAdmin spider" => 6,
+        "🔓 Cookie-forger" => 7,
+        "🎯 Meta-cheater" => 8,
+        "🔨 Brute-forcer" => 9,
+        "🎣 Multi-tool scanner" => 10,
+        "🔍 Explorer" => 11,
+        _ => 12,  // drive-bys
     };
 
     // Redact credential-shaped values in form-urlencoded POST bodies.

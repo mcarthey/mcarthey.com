@@ -114,6 +114,29 @@ public sealed class HackController : ControllerBase
         return Ok(new { role = state.Role, authenticatedAt = state.AuthenticatedAt });
     }
 
+    // POST /api/hack/konami -- client fires this after the Konami-code
+    // animation completes. Logs a "konami" bait entry (celebration, not
+    // shame) and returns the visitor's IP so the client can weave it into
+    // the "YOU HAVE BEEN TRACED" reveal for extra drama.
+    [HttpPost("konami")]
+    public IActionResult Konami()
+    {
+        var ip = HttpContext.Connection.RemoteIpAddress?.ToString() ?? "";
+        _honeypot.Enqueue(new HoneypotEntry(
+            Timestamp: DateTimeOffset.UtcNow,
+            Bait: "konami",
+            RemoteIp: ip,
+            Method: "POST",
+            Path: "/api/hack/konami",
+            QueryString: null,
+            UserAgent: HttpContext.Request.Headers.UserAgent.ToString(),
+            Referer: HttpContext.Request.Headers.Referer.ToString(),
+            Headers: new Dictionary<string, string>(),
+            BodySnippet: null,
+            BodyLength: 0));
+        return Ok(new { ip, added = true });
+    }
+
     // ---------- command handlers ----------
 
     private static string[] RunLs(string args)

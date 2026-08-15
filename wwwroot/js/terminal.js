@@ -422,22 +422,201 @@ class RetroTerminal {
         this.displayOutput(`Current date: ${now.toLocaleDateString()}`);
     }
 
-    triggerKonamiEasterEgg() {
-        this.displayOutput('');
-        this.displayOutput('╔═══════════════════════════════════════╗', 'success');
-        this.displayOutput('║     KONAMI CODE ACTIVATED!           ║', 'success');
-        this.displayOutput('╚═══════════════════════════════════════╝', 'success');
-        this.displayOutput('');
-        this.displayOutput('UP UP DOWN DOWN LEFT RIGHT LEFT RIGHT B A');
-        this.displayOutput('');
-        this.displayOutput('You have unlocked: 30 Lives Mode!');
-        this.displayOutput('Achievement: "The Code Master" earned!');
+    async triggerKonamiEasterEgg() {
+        // Guard against re-entry -- the konami keydown listener can fire
+        // rapidly if the sequence completes twice.
+        if (this._konamiRunning) return;
+        this._konamiRunning = true;
+        try {
+            await this._runKonamiSequence();
+        } finally {
+            this._konamiRunning = false;
+        }
+    }
 
-        // Add visual effects
-        document.body.style.background = '#000080';
-        setTimeout(() => {
-            document.body.style.background = '#000000';
-        }, 3000);
+    async _runKonamiSequence() {
+        // Phase 1: Screen glitch. Body-level CSS class does the shake +
+        // color-inversion flicker. Runs while we build the overlay.
+        document.body.classList.add('konami-glitch');
+        await this._sleep(1200);
+        document.body.classList.remove('konami-glitch');
+
+        // Phase 2: Build full-screen overlay
+        const overlay = this._buildKonamiOverlay();
+        document.body.appendChild(overlay);
+        const line = overlay.querySelector('.k-line');
+        const write = async (txt, delay = 40) => {
+            for (const ch of txt) {
+                line.textContent += ch;
+                await this._sleep(delay);
+            }
+            line.textContent += '\n';
+        };
+
+        // Phase 3: Dial sequence with DTMF tones
+        await write('> Initializing 300 baud modem...', 25);
+        await this._sleep(300);
+        await write('> DIALING  5-5-5-0-1-8-7', 60);
+        await this._playDialTones();
+        await this._sleep(400);
+
+        // Phase 4: Handshake (the iconic screech)
+        await write('> RINGING...', 40);
+        await this._sleep(600);
+        await write('> CARRIER DETECTED. NEGOTIATING PROTOCOL...', 25);
+        this._playModemHandshake();
+        await this._sleep(3200);
+        await write('> CONNECT 2400/ARQ/V32/LAP-M', 25);
+        await this._sleep(400);
+
+        // Phase 5: POST to server for the log entry + get client IP back
+        let clientIp = 'unknown';
+        try {
+            const r = await fetch('/api/hack/konami', { method: 'POST' });
+            const data = await r.json();
+            clientIp = data.ip || 'unknown';
+        } catch (e) { /* still show the animation */ }
+
+        // Phase 6: The "you have been traced" moment
+        await write('> AUTHENTICATION BYPASSED', 30);
+        await this._sleep(300);
+        await write('> ACCESS GRANTED  --  WOPR BACKDOOR', 30);
+        await this._sleep(600);
+        overlay.classList.add('k-red');
+        await write('', 0);
+        await write('* * * WARNING * * *', 45);
+        await write('THIS SESSION IS BEING TRACED.', 30);
+        await write(`ORIGIN IP: ${clientIp}`, 40);
+        await write('IDENTIFICATION LOGGED TO CENTRAL DATABASE.', 25);
+        await this._sleep(1200);
+        await write('', 0);
+        overlay.classList.remove('k-red');
+        await write('  ...just kidding. this is a honeypot.', 35);
+        await write('  ...you have been added to /Shame as a', 25);
+        await write('  Konami-code enterer. wear it proudly.', 25);
+        await this._sleep(2000);
+
+        // Phase 7: Fade out overlay
+        overlay.classList.add('k-fade');
+        await this._sleep(600);
+        overlay.remove();
+
+        // Phase 8: Terminal follow-up
+        this.displayOutput('');
+        this.displayOutput('> KONAMI SEQUENCE ACCEPTED. see /Shame for your entry.', 'success');
+        this.refocusInput();
+    }
+
+    _sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
+
+    _buildKonamiOverlay() {
+        const div = document.createElement('div');
+        div.className = 'konami-overlay';
+        div.innerHTML = `
+            <div class="k-inner">
+              <pre class="k-phone">
+     ______________
+    |  ___________ |
+    | |           ||     TRACE INITIATED
+    | |    -_-    ||     ---------------
+    | |___________||     ATT/BELL 2400 MODEM
+    |_______________|    CONNECT VIA POTS
+    |___._______.___|
+       |||     |||
+       |||=====|||
+       |||     |||
+      _|||     |||_
+              </pre>
+              <pre class="k-line"></pre>
+            </div>
+        `;
+        return div;
+    }
+
+    // Web Audio: DTMF-ish tones for the dial pulses. Not real DTMF but
+    // recognizable as touch-tone dialing to anyone who lived through it.
+    async _playDialTones() {
+        try {
+            const ctx = this._audioCtx ||= new (window.AudioContext || window.webkitAudioContext)();
+            const tones = [
+                [770, 1336], [770, 1336], [770, 1336],  // 5 5 5
+                [697, 1209], [852, 1209], [697, 1477], [770, 1477],  // 0 1 8 7 (approx)
+            ];
+            for (const [f1, f2] of tones) {
+                this._playTonePair(ctx, f1, f2, 0.15);
+                await this._sleep(180);
+            }
+        } catch (e) { /* audio can fail silently on locked contexts */ }
+    }
+
+    _playTonePair(ctx, f1, f2, dur) {
+        const now = ctx.currentTime;
+        for (const f of [f1, f2]) {
+            const osc = ctx.createOscillator();
+            const gain = ctx.createGain();
+            osc.type = 'sine';
+            osc.frequency.value = f;
+            gain.gain.setValueAtTime(0.08, now);
+            gain.gain.exponentialRampToValueAtTime(0.0001, now + dur);
+            osc.connect(gain).connect(ctx.destination);
+            osc.start(now);
+            osc.stop(now + dur);
+        }
+    }
+
+    // The iconic modem handshake screech. Layered oscillators + noise burst.
+    _playModemHandshake() {
+        try {
+            const ctx = this._audioCtx ||= new (window.AudioContext || window.webkitAudioContext)();
+            const now = ctx.currentTime;
+            const dur = 3.0;
+
+            // Carrier tone that warbles
+            const carrier = ctx.createOscillator();
+            const carrierGain = ctx.createGain();
+            carrier.type = 'sawtooth';
+            carrier.frequency.setValueAtTime(1080, now);
+            carrier.frequency.linearRampToValueAtTime(2100, now + 0.6);
+            carrier.frequency.linearRampToValueAtTime(1650, now + 1.4);
+            carrier.frequency.linearRampToValueAtTime(2225, now + 2.2);
+            carrierGain.gain.setValueAtTime(0.06, now);
+            carrierGain.gain.linearRampToValueAtTime(0.001, now + dur);
+            carrier.connect(carrierGain).connect(ctx.destination);
+            carrier.start(now);
+            carrier.stop(now + dur);
+
+            // Warbling second tone
+            const warble = ctx.createOscillator();
+            const warbleGain = ctx.createGain();
+            const lfo = ctx.createOscillator();
+            const lfoGain = ctx.createGain();
+            warble.type = 'square';
+            warble.frequency.value = 1300;
+            lfo.frequency.value = 7;
+            lfoGain.gain.value = 200;
+            lfo.connect(lfoGain).connect(warble.frequency);
+            warbleGain.gain.setValueAtTime(0.05, now);
+            warbleGain.gain.linearRampToValueAtTime(0.001, now + dur);
+            warble.connect(warbleGain).connect(ctx.destination);
+            warble.start(now);
+            lfo.start(now);
+            warble.stop(now + dur);
+            lfo.stop(now + dur);
+
+            // Noise burst -- the "krsshhhhh"
+            const bufferSize = ctx.sampleRate * dur;
+            const noiseBuffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
+            const data = noiseBuffer.getChannelData(0);
+            for (let i = 0; i < bufferSize; i++) data[i] = (Math.random() * 2 - 1) * 0.5;
+            const noise = ctx.createBufferSource();
+            noise.buffer = noiseBuffer;
+            const noiseGain = ctx.createGain();
+            noiseGain.gain.setValueAtTime(0.04, now);
+            noiseGain.gain.linearRampToValueAtTime(0.001, now + dur);
+            noise.connect(noiseGain).connect(ctx.destination);
+            noise.start(now);
+            noise.stop(now + dur);
+        } catch (e) { /* silent fallback */ }
     }
 
     triggerPacmanEasterEgg() {
