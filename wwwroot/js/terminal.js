@@ -28,6 +28,18 @@ class RetroTerminal {
         setTimeout(() => {
             if (commandInput && !this.isBooting) commandInput.focus();
         }, 1000);
+
+        // Clicking anywhere in the terminal interface refocuses the input,
+        // so users can never get "stuck" with a cursor that's scrolled off
+        // the viewport. Skip if the click was on an interactive control.
+        const terminal = document.getElementById('terminal-interface');
+        if (terminal) {
+            terminal.addEventListener('click', (e) => {
+                const tag = e.target.tagName;
+                if (tag === 'INPUT' || tag === 'BUTTON' || tag === 'A') return;
+                document.getElementById('command-input')?.focus();
+            });
+        }
     }
 
     setupKonamiCode() {
@@ -300,6 +312,8 @@ class RetroTerminal {
             }
         } catch (err) {
             this.displayOutput(`(network error: ${err.message})`, 'error');
+        } finally {
+            this.refocusInput();
         }
     }
 
@@ -328,7 +342,20 @@ class RetroTerminal {
             }
         } catch (err) {
             this.displayOutput(`(network error: ${err.message})`, 'error');
+        } finally {
+            this.refocusInput();
         }
+    }
+
+    // Refocus + scroll into view. Input sits above the command-output div,
+    // so a long response can push the input above the viewport fold — the
+    // cursor is there but the user can't see it. Called after any async
+    // handler that renders output.
+    refocusInput() {
+        const input = document.getElementById('command-input');
+        if (!input) return;
+        input.focus();
+        input.scrollIntoView({ behavior: 'smooth', block: 'center' });
     }
 
     displayOutput(message, type = 'normal') {
