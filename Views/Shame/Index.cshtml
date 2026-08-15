@@ -112,6 +112,32 @@
             </tbody>
         </table>
 
+        @if (Model.SuccessfulCracks.Any())
+        {
+            <div class="terminal-text text-sm mb-2 mt-8">
+                <span class="text-amber-400">&gt;&gt;</span> SUCCESSFUL BREACHES  (WELCOME, PROFESSOR)
+            </div>
+            <table class="w-full mb-8 terminal-text text-xs border-collapse">
+                <thead>
+                    <tr class="border-b border-green-500 border-opacity-40">
+                        <th class="text-left p-2">WHEN (UTC)</th>
+                        <th class="text-left p-2">IP</th>
+                        <th class="text-left p-2">USER-AGENT</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var c in Model.SuccessfulCracks)
+                    {
+                        <tr class="border-b border-green-500 border-opacity-10">
+                            <td class="p-2 whitespace-nowrap">@c.Timestamp.ToString("yyyy-MM-dd HH:mm:ss")</td>
+                            <td class="p-2 whitespace-nowrap">@c.RemoteIp</td>
+                            <td class="p-2 break-all">@(string.IsNullOrEmpty(c.BodySnippet) ? "-" : (c.BodySnippet.Length > 80 ? c.BodySnippet[..80] + "..." : c.BodySnippet))</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        }
+
         @if (Model.FunnyPosts.Any())
         {
             <div class="terminal-text text-sm mb-2 mt-8">

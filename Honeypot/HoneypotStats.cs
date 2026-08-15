@@ -58,6 +58,7 @@ public sealed class HoneypotStats
         var uaCounts = new Dictionary<string, int>();
         var recentHits = new List<HitSummary>();
         var funnyPosts = new List<HitSummary>();
+        var successfulCracks = new List<HitSummary>();
 
         var files = Directory.EnumerateFiles(_logDir, "*.jsonl")
             .Select(p => (Path: p, Name: Path.GetFileNameWithoutExtension(p)))
@@ -96,7 +97,14 @@ public sealed class HoneypotStats
                     recentHits.Add(new HitSummary(entry.Timestamp, entry.Bait, entry.RemoteIp, entry.Method, entry.Path, RedactCreds(entry.BodySnippet)));
                 }
 
-                if (entry.BodyLength > 0 && !string.IsNullOrEmpty(entry.BodySnippet))
+                // Successful cracks are celebrations, not brute-force noise.
+                // Log them separately and never expose the winning password
+                // (would spoil the puzzle for the next visitor).
+                if (entry.Bait == "crack-success")
+                {
+                    successfulCracks.Add(new HitSummary(entry.Timestamp, entry.Bait, entry.RemoteIp, entry.Method, entry.Path, entry.UserAgent));
+                }
+                else if (entry.BodyLength > 0 && !string.IsNullOrEmpty(entry.BodySnippet))
                 {
                     funnyPosts.Add(new HitSummary(entry.Timestamp, entry.Bait, entry.RemoteIp, entry.Method, entry.Path, RedactCreds(entry.BodySnippet)));
                 }
@@ -114,7 +122,8 @@ public sealed class HoneypotStats
             TopUserAgents: uaCounts.OrderByDescending(kv => kv.Value).Take(10)
                 .Select(kv => new UserAgentAgg(kv.Key, kv.Value)).ToList(),
             RecentHits: recentHits.OrderByDescending(h => h.Timestamp).Take(25).ToList(),
-            FunnyPosts: funnyPosts.OrderByDescending(h => h.Timestamp).Take(15).ToList());
+            FunnyPosts: funnyPosts.OrderByDescending(h => h.Timestamp).Take(15).ToList(),
+            SuccessfulCracks: successfulCracks.OrderByDescending(h => h.Timestamp).Take(20).ToList());
     }
 
     // Redact credential-shaped values in form-urlencoded POST bodies.
@@ -148,10 +157,11 @@ public sealed record WallOfShameData(
     List<IpAgg> TopIps,
     List<UserAgentAgg> TopUserAgents,
     List<HitSummary> RecentHits,
-    List<HitSummary> FunnyPosts)
+    List<HitSummary> FunnyPosts,
+    List<HitSummary> SuccessfulCracks)
 {
     public static readonly WallOfShameData Empty = new(0, 0, 30, DateTimeOffset.UtcNow,
-        new(), new(), new(), new(), new());
+        new(), new(), new(), new(), new(), new());
 }
 
 public sealed record BaitAgg(string Bait, int Count);
