@@ -49,7 +49,19 @@ if (!app.Environment.IsDevelopment())
 app.UseMiddleware<HoneypotMiddleware>();
 
 app.UseHttpsRedirection();
-app.UseStaticFiles();
+
+// Short max-age on static assets (CSS, JS, images). Long enough to be a
+// real cache during a browsing session, short enough that any staleness
+// self-heals within a minute or two after a deploy. Combined with the
+// no-store policy on the HomeController this keeps browsers current
+// without needing per-asset version query strings.
+app.UseStaticFiles(new StaticFileOptions
+{
+    OnPrepareResponse = ctx =>
+    {
+        ctx.Context.Response.Headers.CacheControl = "public,max-age=120,must-revalidate";
+    }
+});
 app.UseRouting();
 app.UseAuthorization();
 
