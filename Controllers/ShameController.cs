@@ -8,7 +8,7 @@ public class ShameController : Controller
     private readonly HoneypotStats _stats;
     public ShameController(HoneypotStats stats) => _stats = stats;
 
-    // 60s response cache — the underlying HoneypotStats already caches for 60s,
+    // 60s response cache -- the underlying HoneypotStats already caches for 60s,
     // this pushes the cache to the client + intermediaries so bot swarms hitting
     // /shame don't cause file re-scans on every request.
     [ResponseCache(Duration = 60, Location = ResponseCacheLocation.Any)]

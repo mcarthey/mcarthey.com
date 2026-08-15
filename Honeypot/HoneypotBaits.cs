@@ -2,7 +2,7 @@ using System.Collections.Frozen;
 
 namespace mcarthey.com.Honeypot;
 
-// Bait catalog — paths that bots probe and the fake responses we serve.
+// Bait catalog -- paths that bots probe and the fake responses we serve.
 // Adding a new bait: append to _entries below. Aliases (e.g. /pma → phpmyadmin)
 // point at the same BaitResponse instance so log analytics see one bait per family.
 public static class HoneypotBaits
@@ -180,9 +180,19 @@ public static class HoneypotBaits
         StatusCode: 401);
 
     // Legacy portfolio routes that used to be real pages. Now they log as
-    // "restricted" and serve a themed 401 — bots that scraped the old URLs
+    // "restricted" and serve a themed 401 -- bots that scraped the old URLs
     // land in the shame log; humans who bookmarked the old pages get a
     // friendly path back to the console.
+    // Meta-cheat bait: URLs a "clever" hacker might POST to directly to
+    // try to bypass the puzzle. Every hit is logged as bait "meta-cheat"
+    // and shows on the wall of shame under a "well played but noted"
+    // category. Response is intentionally boring -- 404-style JSON.
+    private static readonly BaitResponse MetaCheat = new(
+        Name: "meta-cheat",
+        ContentType: "application/json",
+        Body: """{"error":"not found","hint":"nice try"}""",
+        StatusCode: 404);
+
     private static readonly BaitResponse Restricted = new(
         Name: "restricted",
         ContentType: "text/html; charset=utf-8",
@@ -274,7 +284,22 @@ public static class HoneypotBaits
         ["/adminer.php"] = Adminer,
         ["/adminer/"] = Adminer,
 
-        // Legacy portfolio routes — now 401 traps.
+        // Meta-cheat bait: someone trying to bypass the puzzle by POSTing
+        // to guessed endpoints. Every hit shame-walled as "meta-cheat".
+        ["/api/flag"] = MetaCheat,
+        ["/api/hack/complete"] = MetaCheat,
+        ["/api/hack/grant"] = MetaCheat,
+        ["/api/hack/skip"] = MetaCheat,
+        ["/api/hack/solve"] = MetaCheat,
+        ["/api/session/promote"] = MetaCheat,
+        ["/api/admin/login"] = MetaCheat,
+        ["/api/admin/grant"] = MetaCheat,
+        ["/flag"] = MetaCheat,
+        ["/flag.txt"] = MetaCheat,
+        ["/.well-known/flag"] = MetaCheat,
+        ["/challenge.txt"] = MetaCheat,
+
+        // Legacy portfolio routes -- now 401 traps.
         ["/About"] = Restricted,
         ["/About/"] = Restricted,
         ["/About/Index"] = Restricted,

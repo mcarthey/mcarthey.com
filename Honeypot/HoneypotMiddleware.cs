@@ -6,7 +6,7 @@ namespace mcarthey.com.Honeypot;
 // If the path matches a bait, log the hit and serve the fake response.
 // Otherwise pass through to the rest of the pipeline.
 //
-// Deliberately does NOT echo any request input into the response body —
+// Deliberately does NOT echo any request input into the response body --
 // scanners sometimes probe for reflected XSS, and reflecting a payload
 // would turn the honeypot into a real XSS hole.
 public sealed class HoneypotMiddleware
@@ -44,20 +44,12 @@ public sealed class HoneypotMiddleware
             ctx.Request.Body.Position = 0;
         }
 
-        // Prefer X-Forwarded-For when present — behind Caddy on localhost,
-        // ctx.Connection.RemoteIpAddress always resolves to ::1/127.0.0.1.
-        // Kestrel only binds to 127.0.0.1 in prod so the header is trusted
-        // (no path for an external client to spoof it). Take the leftmost
-        // entry from the XFF chain — that's the original client per RFC 7239.
-        var xff = ctx.Request.Headers["X-Forwarded-For"].ToString();
-        var remoteIp = !string.IsNullOrEmpty(xff)
-            ? xff.Split(',', 2)[0].Trim()
-            : ctx.Connection.RemoteIpAddress?.ToString() ?? "";
-
+        // UseForwardedHeaders (registered in Program.cs) makes
+        // ctx.Connection.RemoteIpAddress the true client IP behind Caddy.
         var entry = new HoneypotEntry(
             Timestamp: DateTimeOffset.UtcNow,
             Bait: bait.Name,
-            RemoteIp: remoteIp,
+            RemoteIp: ctx.Connection.RemoteIpAddress?.ToString() ?? "",
             Method: ctx.Request.Method,
             Path: path,
             QueryString: ctx.Request.QueryString.HasValue ? ctx.Request.QueryString.Value : null,

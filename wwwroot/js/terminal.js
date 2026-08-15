@@ -141,10 +141,47 @@ class RetroTerminal {
 
         const commandInput = document.getElementById('command-input');
 
+        // LOGIN state: capture raw input (no upper-case, no history),
+        // handle username → password → submit flow.
+        if (this.loginState) {
+            if (e.key === 'Escape') {
+                e.preventDefault();
+                this.loginState = null;
+                commandInput.value = '';
+                commandInput.type = 'text';
+                commandInput.placeholder = 'Type command or click navigation...';
+                this.displayOutput('(login aborted)');
+                return;
+            }
+            if (e.key !== 'Enter') return;
+            e.preventDefault();
+            const value = commandInput.value;
+            commandInput.value = '';
+            if (this.loginState.step === 'username') {
+                this.loginState.username = value;
+                this.displayOutput(`Username: ${value}`);
+                commandInput.type = 'password';
+                commandInput.placeholder = 'Password:';
+                this.loginState.step = 'password';
+                return;
+            }
+            // Password step
+            const username = this.loginState.username;
+            const password = value;
+            this.displayOutput('Password: ' + '*'.repeat(Math.min(password.length, 8)));
+            this.loginState = null;
+            commandInput.type = 'text';
+            commandInput.placeholder = 'Type command or click navigation...';
+            this.completeLogin(username, password);
+            return;
+        }
+
         switch (e.key) {
             case 'Enter':
                 e.preventDefault();
-                this.executeCommand(commandInput.value.trim().toUpperCase());
+                // Preserve raw command for server-side dispatch; executeCommand
+                // does its own upper-casing for the local-command match.
+                this.executeCommand(commandInput.value.trim());
                 break;
             case 'ArrowUp':
                 e.preventDefault();
@@ -181,8 +218,8 @@ class RetroTerminal {
 
     autoComplete(partialCommand) {
         // Autocomplete deliberately excludes easter-egg commands (KONAMI, PACMAN, TETRIS)
-        // and any future hack-puzzle commands — discovery is part of the fun.
-        const commands = ['HELP', 'CLEAR', 'SHAME', 'DIR', 'VER', 'TIME', 'DATE'];
+        // and hack-puzzle discovery commands — surprise is part of the fun.
+        const commands = ['HELP', 'CLEAR', 'SHAME', 'LOGIN', 'LS', 'CAT', 'WHOAMI', 'VER', 'TIME', 'DATE'];
         const matches = commands.filter(cmd => cmd.startsWith(partialCommand.toUpperCase()));
 
         if (matches.length === 1) {
@@ -205,41 +242,92 @@ class RetroTerminal {
         // Display the command
         this.displayOutput(`C:\\> ${command}`, 'command');
 
-        // Process the command
-        switch (command.toUpperCase()) {
+        // Client-side commands: pure UX + easter eggs. Everything else
+        // (LS, CAT, WHOAMI, HISTORY, WARGAMES, LOGOUT, etc.) goes to the
+        // server so puzzle content never lives in view-source.
+        const upper = command.toUpperCase();
+        switch (upper) {
             case 'HELP':
                 this.showHelp();
-                break;
+                return;
             case 'CLEAR':
                 this.clearScreen();
-                break;
+                return;
             case 'KONAMI':
                 this.triggerKonamiEasterEgg();
-                break;
+                return;
             case 'PACMAN':
                 this.triggerPacmanEasterEgg();
-                break;
+                return;
             case 'TETRIS':
                 this.triggerTetrisEasterEgg();
-                break;
+                return;
             case 'SHAME':
                 window.location.href = '/Shame';
-                break;
-            case 'DIR':
-                this.showDirectory();
-                break;
+                return;
             case 'VER':
                 this.showVersion();
-                break;
+                return;
             case 'TIME':
                 this.showTime();
-                break;
+                return;
             case 'DATE':
                 this.showDate();
-                break;
-            default:
-                this.displayOutput(`'${command}' is not recognized as an internal or external command, operable program or batch file.`, 'error');
-                this.displayOutput(`Type HELP for available commands.`, 'info');
+                return;
+            case 'LOGIN':
+                this.beginLogin();
+                return;
+        }
+        // Fall-through: send to server. Server decides whether the command
+        // is a real fake-shell verb or "command not found".
+        this.execRemote(command);
+    }
+
+    async execRemote(command) {
+        try {
+            const resp = await fetch('/api/hack/exec', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ command })
+            });
+            if (!resp.ok) {
+                this.displayOutput(`(server error: HTTP ${resp.status})`, 'error');
+                return;
+            }
+            const data = await resp.json();
+            for (const line of (data.output || [])) {
+                this.displayOutput(line);
+            }
+        } catch (err) {
+            this.displayOutput(`(network error: ${err.message})`, 'error');
+        }
+    }
+
+    beginLogin() {
+        // Two-step interaction handled inside handleKeyDown via this.loginState.
+        // On Enter with step='username', capture username, mask input, step='password'.
+        // On Enter with step='password', POST creds, reset state.
+        const input = document.getElementById('command-input');
+        if (!input) return;
+        input.value = '';
+        input.placeholder = 'Username:';
+        this.loginState = { step: 'username', username: null };
+        this.displayOutput('Enter credentials. ESC to abort.');
+    }
+
+    async completeLogin(username, password) {
+        try {
+            const resp = await fetch('/api/hack/login', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ username, password })
+            });
+            const data = await resp.json();
+            for (const line of (data.output || [])) {
+                this.displayOutput(line);
+            }
+        } catch (err) {
+            this.displayOutput(`(network error: ${err.message})`, 'error');
         }
     }
 
@@ -270,7 +358,12 @@ class RetroTerminal {
         this.displayOutput('HELP     - Show this message');
         this.displayOutput('CLEAR    - Clear the screen');
         this.displayOutput('SHAME    - Wall of shame (recent intrusion attempts)');
-        this.displayOutput('DIR      - List directory contents');
+        this.displayOutput('LS       - List directory contents (try LS /home)');
+        this.displayOutput('CAT      - Print file contents (try CAT /etc/motd)');
+        this.displayOutput('WHOAMI   - Show current user');
+        this.displayOutput('LOGIN    - Authenticate to the system');
+        this.displayOutput('LOGOUT   - End authenticated session');
+        this.displayOutput('HISTORY  - Show recent shell commands');
         this.displayOutput('VER      - Show system version');
         this.displayOutput('TIME     - Display current time');
         this.displayOutput('DATE     - Display current date');
@@ -281,19 +374,6 @@ class RetroTerminal {
     clearScreen() {
         const outputDiv = document.getElementById('command-output');
         if (outputDiv) outputDiv.innerHTML = '';
-    }
-
-    showDirectory() {
-        this.displayOutput('');
-        this.displayOutput(' Directory of /', 'success');
-        this.displayOutput('');
-        this.displayOutput('drwxr-xr-x  root  4096  Aug 14 22:00  etc/');
-        this.displayOutput('drwxr-xr-x  root  4096  Aug 14 22:00  var/');
-        this.displayOutput('drwxr-xr-x  root  4096  Aug 14 22:00  home/');
-        this.displayOutput('drwxr-xr-x  root  4096  Aug 14 22:00  usr/');
-        this.displayOutput('-rw-r--r--  root   256  Aug 14 22:00  README');
-        this.displayOutput('');
-        this.displayOutput('Access to /etc, /var, /home restricted to authenticated users.');
     }
 
     showVersion() {

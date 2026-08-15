@@ -69,3 +69,6 @@ artifacts/
 **/packages/*
 *.nuget.props
 *.nuget.targets
+
+# DataProtection key ring — dev-local only, real path is /var/lib/mcarthey/dp-keys on the box
+/dp-keys/

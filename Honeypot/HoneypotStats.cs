@@ -3,7 +3,7 @@ using System.Text.Json;
 namespace mcarthey.com.Honeypot;
 
 // Reads the last N days of honeypot JSONL logs, computes aggregations,
-// caches the result for 60s. Not a database — just an in-memory reducer
+// caches the result for 60s. Not a database -- just an in-memory reducer
 // over the same log files the middleware writes to.
 public sealed class HoneypotStats
 {
