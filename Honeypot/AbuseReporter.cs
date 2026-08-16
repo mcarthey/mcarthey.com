@@ -15,6 +15,8 @@ public sealed class AbuseReporter : BackgroundService
 {
     private static readonly TimeSpan ScanInterval = TimeSpan.FromMinutes(15);
     private static readonly TimeSpan MinReportGap = TimeSpan.FromHours(24);
+    private static readonly TimeSpan NormalWindow = TimeSpan.FromHours(24);
+    private static readonly TimeSpan BackfillWindow = TimeSpan.FromDays(30);
     private const int MinUniqueBaitsToReport = 2;
 
     private readonly IConfiguration _config;
@@ -46,9 +48,24 @@ public sealed class AbuseReporter : BackgroundService
         try { await Task.Delay(TimeSpan.FromMinutes(2), stoppingToken); }
         catch (OperationCanceledException) { return; }
 
+        // First run: if the state file is missing (never reported anything),
+        // do a one-shot backfill over the last 30 days. Historical IPs still
+        // have community value even if the reports are dated. Subsequent runs
+        // use the normal 24h window.
+        var doBackfill = !File.Exists(_stateFile);
+        if (doBackfill)
+        {
+            _log.LogInformation("AbuseReporter first run detected; backfilling last {Days} days.", BackfillWindow.TotalDays);
+        }
+
         while (!stoppingToken.IsCancellationRequested)
         {
-            try { await ScanAndReportAsync(apiKey, stoppingToken); }
+            try
+            {
+                var window = doBackfill ? BackfillWindow : NormalWindow;
+                await ScanAndReportAsync(apiKey, window, stoppingToken);
+                doBackfill = false;  // only backfill once
+            }
             catch (OperationCanceledException) { break; }
             catch (Exception ex) { _log.LogError(ex, "AbuseReporter scan failed"); }
 
@@ -57,17 +74,20 @@ public sealed class AbuseReporter : BackgroundService
         }
     }
 
-    private async Task ScanAndReportAsync(string apiKey, CancellationToken ct)
+    private async Task ScanAndReportAsync(string apiKey, TimeSpan window, CancellationToken ct)
     {
         if (!Directory.Exists(_logDir)) return;
 
         var state = await LoadStateAsync(ct);
-        var cutoff = DateTimeOffset.UtcNow.AddDays(-1);  // consider last 24h of hits
+        var cutoff = DateTimeOffset.UtcNow - window;
         var perIp = new Dictionary<string, IpAggregate>();
 
+        // Backfill needs the whole 30-day file set; normal scan only needs
+        // the last 3 days of files to cover the 24h cutoff.
+        var fileTake = window > NormalWindow ? 31 : 3;
         var files = Directory.EnumerateFiles(_logDir, "*.jsonl")
             .OrderByDescending(f => f)
-            .Take(3);  // recent days only
+            .Take(fileTake);
 
         foreach (var file in files)
         {
