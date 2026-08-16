@@ -10,6 +10,8 @@ builder.Services.AddSingleton<HoneypotLogger>();
 builder.Services.AddHostedService(sp => sp.GetRequiredService<HoneypotLogger>());
 builder.Services.AddSingleton<HoneypotStats>();
 builder.Services.AddSingleton<GameSession>();
+builder.Services.AddHttpClient();
+builder.Services.AddHostedService<AbuseReporter>();
 
 // Trust X-Forwarded-For and X-Forwarded-Proto from Caddy on localhost.
 // Do NOT clear KnownIPNetworks -- the default includes loopback, which

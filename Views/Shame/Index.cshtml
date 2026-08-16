@@ -62,7 +62,16 @@
                     @foreach (var s in Model.SpeciesCatalog)
                     {
                         <tr class="border-b border-green-500 border-opacity-10">
-                            <td class="p-2 whitespace-nowrap">@s.Ip</td>
+                            <td class="p-2 whitespace-nowrap">
+                                @if (System.Net.IPAddress.TryParse(s.Ip, out _) && !s.Ip.StartsWith("::") && !s.Ip.StartsWith("127."))
+                                {
+                                    <a href="https://www.abuseipdb.com/check/@s.Ip" target="_blank" rel="noopener" class="text-amber-400 hover:underline">@s.Ip</a>
+                                }
+                                else
+                                {
+                                    @s.Ip
+                                }
+                            </td>
                             <td class="p-2">@s.Species</td>
                             <td class="p-2 text-right">@s.Hits.ToString("N0")</td>
                             <td class="p-2 text-right">@s.UniqueBaits</td>

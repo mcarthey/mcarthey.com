@@ -54,6 +54,22 @@ jobs:
             --self-contained false \
             --output ./publish
 
+      - name: Render appsettings.Production.json from template + secrets
+        # envsubst replaces ${ABUSEIPDB_API_KEY} in the committed template
+        # with the GitHub Secret value, writing the result into the publish
+        # output so it ships in the tar stream. Restricted to an explicit
+        # variable list so any other ${...} pattern in the template stays
+        # literal. Missing secret is fine -- the app no-ops the reporter
+        # when the key is empty.
+        env:
+          ABUSEIPDB_API_KEY: ${{ secrets.ABUSEIPDB_API_KEY }}
+        run: |
+          VARS='${ABUSEIPDB_API_KEY}'
+          envsubst "$VARS" \
+            < appsettings.Production.json.template \
+            > publish/appsettings.Production.json
+          python3 -m json.tool publish/appsettings.Production.json > /dev/null
+
       - name: Configure SSH
         run: |
           mkdir -p ~/.ssh

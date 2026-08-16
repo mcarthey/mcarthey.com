@@ -4,5 +4,8 @@
   },
   "DataProtection": {
     "KeysPath": "/var/lib/mcarthey/dp-keys"
+  },
+  "AbuseIPDB": {
+    "ApiKey": "${ABUSEIPDB_API_KEY}"
   }
 }
