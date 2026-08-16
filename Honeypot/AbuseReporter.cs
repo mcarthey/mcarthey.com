@@ -152,6 +152,14 @@ public sealed class AbuseReporter : BackgroundService
             if (resp.IsSuccessStatusCode) return true;
 
             var body = await resp.Content.ReadAsStringAsync(ct);
+            // 429 with "same IP" message = AbuseIPDB already accepted a
+            // recent report from us for this IP. Treat as success for our
+            // state tracking so we don't hammer their API on every scan.
+            if ((int)resp.StatusCode == 429 && body.Contains("same IP", StringComparison.OrdinalIgnoreCase))
+            {
+                _log.LogInformation("AbuseIPDB already has recent report for {Ip}; treating as accepted.", ip);
+                return true;
+            }
             _log.LogWarning("AbuseIPDB report for {Ip} rejected: HTTP {Status} -- {Body}", ip, (int)resp.StatusCode, body);
             return false;
         }
