@@ -22,6 +22,7 @@ public sealed class ThreatsController : ControllerBase
         var threats = data.SpeciesCatalog
             .Where(s => s.UniqueBaits >= 2)
             .Where(s => !s.Species.StartsWith("🏆") && !s.Species.StartsWith("🕹"))  // exclude celebrations
+            .Where(s => !IsPrivateOrLoopback(s.Ip))                                   // exclude local/RFC1918
             .Select(s => new
             {
                 ip = s.Ip,
@@ -48,5 +49,25 @@ public sealed class ThreatsController : ControllerBase
         var i = 0;
         while (i < s.Length && (char.IsSurrogate(s[i]) || s[i] > 127)) i++;
         return s[i..].TrimStart();
+    }
+
+    private static bool IsPrivateOrLoopback(string ip)
+    {
+        if (!System.Net.IPAddress.TryParse(ip, out var addr)) return true;
+        if (System.Net.IPAddress.IsLoopback(addr)) return true;
+        var bytes = addr.GetAddressBytes();
+        if (addr.AddressFamily == System.Net.Sockets.AddressFamily.InterNetwork)
+        {
+            if (bytes[0] == 10) return true;
+            if (bytes[0] == 172 && bytes[1] >= 16 && bytes[1] <= 31) return true;
+            if (bytes[0] == 192 && bytes[1] == 168) return true;
+            if (bytes[0] == 169 && bytes[1] == 254) return true;
+        }
+        if (addr.AddressFamily == System.Net.Sockets.AddressFamily.InterNetworkV6)
+        {
+            if (bytes[0] == 0xfe && (bytes[1] & 0xC0) == 0x80) return true;
+            if (bytes[0] == 0xfc || bytes[0] == 0xfd) return true;
+        }
+        return false;
     }
 }
