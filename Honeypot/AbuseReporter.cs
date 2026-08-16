@@ -48,23 +48,21 @@ public sealed class AbuseReporter : BackgroundService
         try { await Task.Delay(TimeSpan.FromMinutes(2), stoppingToken); }
         catch (OperationCanceledException) { return; }
 
-        // First run: if the state file is missing (never reported anything),
-        // do a one-shot backfill over the last 30 days. Historical IPs still
-        // have community value even if the reports are dated. Subsequent runs
-        // use the normal 24h window.
-        var doBackfill = !File.Exists(_stateFile);
-        if (doBackfill)
-        {
-            _log.LogInformation("AbuseReporter first run detected; backfilling last {Days} days.", BackfillWindow.TotalDays);
-        }
-
+        // Every scan: if the state file is missing (never reported, or
+        // manually deleted to force a backfill), scan the last 30 days
+        // instead of the normal 24h. Historical IPs still have community
+        // value; deleting abuse-reported.json is the "force backfill" knob.
         while (!stoppingToken.IsCancellationRequested)
         {
             try
             {
+                var doBackfill = !File.Exists(_stateFile);
                 var window = doBackfill ? BackfillWindow : NormalWindow;
+                if (doBackfill)
+                {
+                    _log.LogInformation("AbuseReporter state file absent; backfilling last {Days} days.", BackfillWindow.TotalDays);
+                }
                 await ScanAndReportAsync(apiKey, window, stoppingToken);
-                doBackfill = false;  // only backfill once
             }
             catch (OperationCanceledException) { break; }
             catch (Exception ex) { _log.LogError(ex, "AbuseReporter scan failed"); }
